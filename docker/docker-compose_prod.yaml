@@ -1,0 +1,37 @@
+version: '3.3'
+
+services:
+
+  api:
+    image: ${DOCKER_REGISTRY_PREFIX-art4lab0.labs.mastercard.com:5001/}bps_service/com.mastercard.labs.bps/rest-service/prod:latest
+    ports:
+      - "9987:9987"
+    depends_on:
+    - keycloak
+    environment:
+     - VAULT_ENABLED=true
+     - VAULT_TOKEN=s.NXslXX8O9EgOe20eC1hB1dfU
+     - VAULT_ADDR=http://10.149.36.176
+     - APP_LOG_ROOT=/var/backup/docker/logs/bps-discovery
+     - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+     - /var/bps-discovery/logs:/var/backup/docker/logs/bps-discovery
+  keycloak:
+    image: ${DOCKER_REGISTRY_PREFIX-art4lab0.labs.mastercard.com:5001/}bps_service/com.mastercard.labs.bps/keycloak:50
+    environment:
+      PROXY_ADDRESS_FORWARDING: "true"
+    ports:
+      - "9990:8443"
+  rules:
+    image: ${DOCKER_REGISTRY_PREFIX-art4lab0.labs.mastercard.com:5001/}bps_service/com.mastercard.labs.bps/bps-rules-engine/prod:latest
+    ports:
+      - "9985:9985"
+    environment:
+     - VAULT_ENABLED=true
+     - VAULT_SCHEME=http
+     - VAULT_TOKEN=s.xFlAL5mnQwauvqo88zBrBvyT
+     - VAULT_ADDR=http://10.149.36.176
+     - APP_LOG_ROOT=/var/backup/docker/logs/bps-rules-engine
+     - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+     - /var/bps-discovery/logs:/var/backup/docker/logs/bps-rules-engine

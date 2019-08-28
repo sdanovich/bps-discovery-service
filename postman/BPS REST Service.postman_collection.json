@@ -1,0 +1,59 @@
+{
+	"info": {
+		"_postman_id": "739028bf-551e-18c9-b461-cf0f9f20d3F7",
+		"name": "BPS REST Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Buyer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{host}}/bps-directory/api/v0.1/buyers/payless.payments.buy.bps",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"bps-directory",
+						"api",
+						"v0.1",
+						"buyer",
+						"payless.payments.buy.bps"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Supplier",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{host}}/bps-directory/api/v0.1/suppliers/fancy.westcoast.bps",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"bps-directory",
+						"api",
+						"v0.1",
+						"supplier",
+						"fancy.westcoast.bps"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

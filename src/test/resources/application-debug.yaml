@@ -1,0 +1,56 @@
+spring:
+  profiles:
+    include: caas
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    show-sql: true
+    properties:
+      javax:
+        persistence:
+          validation:
+            mode: none
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+server:
+  servlet:
+    context-path: /bps-discovery/api/v0.1/
+  port: 9979
+
+webhook:
+  secretKey: v7aJHjbbxASKiwDW5wq6
+
+discovery:
+  delimiter: "|"
+  csv:
+    lookup-columns: "Company Name|Address Line 1|Address Line 2|Address Line 3|Address Line 4|City|State/Province|Country|Zip|Tax ID|D&B #|BPS Available|Card Acceptance|Restrictions|Confidence"
+    registration-columns: "Company Name|Address Line 1|Address Line 2|Address Line 3|City|State/Province|Country|Zip|Tax ID|D&B #|Buyer ID|Status|Reason"
+directory:
+  datasource:
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    username: bpsservice
+    password: bps!2345
+    driver-class-name: org.h2.Driver
+
+journal:
+  datasource:
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    username: bpsservice
+    password: bps!2345
+    driver-class-name: org.h2.Driver
+keycloak:
+  auth-server-url: http://dev4lab0.labs.mastercard.com:9990/bps-auth/
+  realm: test
+  resource: bps
+  public-client: "true"
+swagger:
+  url:
+    rules: http://localhost:9985/bps-rules/api/v0.1
+    landing: http://localhost:9987/bps-discovery/api/v0.1
+    tokenAccess: http://localhost:9987/bps-auth/realms/test/protocol/openid-connect/token
+url:
+  validator: ${swagger.url.rules}/validations
+  authorization: ${swagger.url.rules}/pre-validations
+

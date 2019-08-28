@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>BPS Discovery</title>
+    <link th:href="@{/css/table.css}" rel="stylesheet"/>
+    <link th:href="@{/css/modal.css}" rel="stylesheet"/>
+    <link th:href="@{/css/fileupload.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- Page Content -->
+<div class="container">
+
+    <!-- component template -->
+    <script type="text/x-template" id="grid-template">
+        <table>
+            <thead>
+            <tr>
+                <th v-for="key in columns"
+                    @click="sortBy(key)"
+                    :class="{ active: sortKey == key }">
+                    {{ key | capitalize }}
+                    <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+          </span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="entry in filteredData">
+                <td v-for="key in columns">
+                    <div v-if="entry[key].includes('/discovery')" align="center">
+                        <a :href="entry[key]"><img border="0" alt="download" th:src="@{/img/download.gif}"
+                                                   width="25"></a>
+                    </div>
+                    <div v-else-if="entry[key].toLowerCase() === 'received'">
+                        <div style="background-color: #ffff33">Uploaded</div>
+                    </div>
+                    <div v-else-if="entry[key].toLowerCase() === 'processing'">
+                        <div style="background-color: #cc6600">Processing</div>
+                    </div>
+                    <div v-else-if="entry[key].toLowerCase() === 'complete'">
+                        <div style="background-color: #32C367">Complete</div>
+                    </div>
+                    <div v-else>{{entry[key]}}</div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </script>
+    <script type="text/x-template" id="modal-template">
+        <transition name="modal">
+            <div class="modal-mask">
+                <div class="modal-wrapper">
+                    <div class="modal-container">
+
+
+                        <div class="modal-footer">
+                            <slot name="footer">
+                                <button class="modal-default-button" @click="$emit('close')">
+                                    OK
+                                </button>
+                            </slot>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </script>
+
+    <img th:src="@{/img/logo.jpg}"/>
+    <br/>
+    <div style="align-items: flex-start" aria-setsize="10" id="block_container">
+
+        <div id="app1">
+            <div class="item1">
+                <a class="button button3" @click="toggleShow2">Buyer Discovery</a>
+                <bps-discovery-upload url="/bps/discovery/v0.1/discovery/buyers"
+                                      lang-type="en"
+                                      :only-single="true"
+                                      :value="show2"
+                                      field="file"
+                                      key="0"
+                                      max-size="2048"
+                                      :only-csv="true"
+                                      :params="otherParams"></bps-discovery-upload>
+            </div>
+        </div>
+
+        <!--<div id="uploadBPADiscovery">
+            <button id="show-modal1" @click="showModal = true" class="button button3">BPA Discovery</button>
+            &lt;!&ndash; use the modal component, pass in the prop &ndash;&gt;
+            <modal-component v-if="showModal" @close="showModal = false">
+
+                <template slot="modal-header"> Testing something </template>
+                <template slot="modal-text"> <div id="app">
+                    <bps-discovery-upload url="/bps/discovery/v0.1/discovery/suppliers"
+                                          lang-type="en"
+                                          field="file"
+                                          key="1"
+                                          max-size="500"
+                                          :only-single="true"
+                                          :value="true"
+                                          :only-txt="false"
+                                          :params="params"></bps-discovery-upload>
+                </div> </template>
+                <template slot="modal-footer"><button class="btn btn-primary">Save Changes</button></template>
+
+
+
+                <h3 slot="header">Upload BPA Discovery File</h3>
+
+            </modal-component>
+        </div>-->
+
+        <div id="app2">
+            <div class="item2">
+                <a class="button button3" @click="toggleShow2">Supplier Discovery</a>
+                <bps-discovery-upload url="/bps/discovery/v0.1/discovery/suppliers"
+                                      lang-type="en"
+                                      :only-single="true"
+                                      :value="show2"
+                                      field="file"
+                                      key="0"
+                                      max-size="2048"
+                                      :only-csv="true"
+                                      :params="otherParams"></bps-discovery-upload>
+            </div>
+        </div>
+
+        <!--<div id="uploadSPADiscovery">
+            <button id="show-modal2" @click="showModal = true" class="button button3">SPA Discovery</button>
+            &lt;!&ndash; use the modal component, pass in the prop &ndash;&gt;
+            <modal v-if="showModal" @close="showModal = false">
+                &lt;!&ndash;
+                  you can use custom content here to overwrite
+                  default content
+                &ndash;&gt;
+                <h3 slot="header">Upload SPA Discovery File</h3>
+            </modal>
+        </div>-->
+
+        <div id="app3">
+            <div class="item3">
+                <a class="button button3" @click="toggleShow2">Buyer Register</a>
+                <bps-discovery-upload url="/bps/discovery/v0.1/discovery/buyers"
+                                      lang-type="en"
+                                      :only-single="true"
+                                      :value="show2"
+                                      field="file"
+                                      key="0"
+                                      max-size="2048"
+                                      :only-csv="true"
+                                      :params="otherParams"></bps-discovery-upload>
+            </div>
+        </div>
+
+        <!--<div id="uploadBPARegister">
+            <button id="show-modal3" @click="showModal = true"  class="button button3">BPA Register</button>
+            &lt;!&ndash; use the modal component, pass in the prop &ndash;&gt;
+            <modal v-if="showModal" @close="showModal = false">
+                &lt;!&ndash;
+                  you can use custom content here to overwrite
+                  default content
+                &ndash;&gt;
+                <h3 slot="header">Upload BPA Register File</h3>
+            </modal>
+        </div>-->
+
+        <div id="app4">
+            <div class="item4">
+                <a class="button button3" @click="toggleShow2">Supplier Register</a>
+                <bps-discovery-upload url="/bps/discovery/v0.1/discovery/suppliers"
+                                      lang-type="en"
+                                      :only-single="true"
+                                      :value="show2"
+                                      field="file"
+                                      key="0"
+                                      max-size="2048"
+                                      :only-csv="true"
+                                      :params="otherParams"></bps-discovery-upload>
+            </div>
+        </div>
+
+        <!--<div id="uploadSPARegister">
+            <button id="show-modal4" @click="showModal = true" class="button button3">SPA Register</button>
+            &lt;!&ndash; use the modal component, pass in the prop &ndash;&gt;
+            <modal v-if="showModal" @close="showModal = false">
+                &lt;!&ndash;
+                  you can use custom content here to overwrite
+                  default content
+                &ndash;&gt;
+                <h3 slot="header">Upload SPA Register File</h3>
+            </modal>
+        </div>-->
+        <!--
+        <div>
+            <form id="search">
+                <input placeholder="Search" name="query" v-model="searchQuery">
+            </form>
+        </div>
+        -->
+    </div>
+    <!-- discoverytable root element -->
+    <div id="discoverytable">
+        <discoverytable-grid
+                :data="gridData "
+                :columns="gridColumns"
+                :filter-key="searchQuery">
+        </discoverytable-grid>
+       <!--
+        <div id="page-navigation">
+            <button @click=movePages(-1)>Back</button>
+            <p>{{startRow / rowsPerPage + 1}} out of {{Math.ceil(gridData.length / rowsPerPage)}}</p>
+            <button @click=movePages(1)>Next</button>
+        </div>
+        -->
+    </div>
+</div>
+<!-- /.container -->
+
+<!-- Footer -->
+<footer class="py-5 bg-dark">
+    <div class="container">
+        <p class="m-0 text-center text-white">BPS Discovery &copy;
+            <script>document.write(new Date().getFullYear())</script>
+        </p>
+    </div>
+    <!-- /.container -->
+</footer>
+
+<script src="https://unpkg.com/vue@2.5.8/dist/vue.js"></script>
+<script src="https://unpkg.com/axios@0.17.1/dist/axios.min.js"></script>
+<script th:src="@{js/table.js}"></script>
+<script th:src="@{js/modal.js}"></script>
+<script th:src="@{js/fileupload.js}"></script>
+
+</body>
+</html>

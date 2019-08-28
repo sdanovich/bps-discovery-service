@@ -1,0 +1,56 @@
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
+spring:
+  profiles:
+    include: caas
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  main:
+    allow-bean-definition-overriding: "true"
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        web: DEBUG
+        0: DEBUG
+      hibernate:
+        type: TRACE
+webhook:
+  secretKey: v7aJHjbbxASKiwDW5wq6
+server:
+  port: "9987"
+
+directory:
+  datasource:
+    url: jdbc:postgresql://dev4lab0.labs.mastercard.com:9981/bps?currentSchema=discovery&ApplicationName=bpsservice-discovery-dockerdev
+    username: bpsservice
+    password: bps!2345
+    driver-class-name: org.postgresql.Driver
+
+journal:
+  datasource:
+    url: jdbc:postgresql://dev4lab0.labs.mastercard.com:9981/bps?currentSchema=journal&ApplicationName=bpsservice-journal-dockerdev
+    username: bpsservice
+    password: bps!2345
+    driver-class-name: org.postgresql.Driver
+
+discovery:
+  delimiter: "|"
+  businessId: "bpsBusinessId"
+  trackPostUrl: http://localhost:9987/bps/discovery/v0.1/track/client/api
+
+swagger:
+  url:
+    rules: http://dev4lab0.labs.mastercard.com:9985/bps/rules/v0.1
+    landing: http://dev4lab0.labs.mastercard.com:9987/bps/discovery/v0.1/swagger.html
+url:
+  validator: ${swagger.url.rules}/validations
+  authorization: ${swagger.url.rules}/pre-validations
+

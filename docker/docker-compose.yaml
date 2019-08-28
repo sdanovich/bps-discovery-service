@@ -1,0 +1,36 @@
+version: '3.3'
+
+services:
+
+  api:
+    image: ${DOCKER_REGISTRY_PREFIX-art4lab0.labs.mastercard.com:5001/}com.mastercard.labs.bps/rest-service/DEPLOY_ENV:DEPLOY_VERSION
+    ports:
+      - "9987:9987"
+    environment:
+      - VAULT_ENABLED=false
+      - VAULT_TOKEN=s.mi3M2jPqm4lhlMD6s81xAgDr
+      - VAULT_ADDR=https://dev.labs.mastercard.com
+      - APP_LOG_ROOT=/var/backup/docker/logs/bps-discovery
+      - SPRING_PROFILES_ACTIVE=BUILD_ENV
+    depends_on:
+      - postgres
+    volumes:
+      - /apps_01/logs/bps-discovery:/var/backup/docker/logs/bps-discovery
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=bps!2345
+      - POSTGRES_USER=bpsservice
+      - POSTGRES_DB=bps
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "9981:5432"
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: bpsservice
+      PGADMIN_DEFAULT_PASSWORD: bps!2345
+    ports:
+      - "9982:80"
+    depends_on:
+      - postgres

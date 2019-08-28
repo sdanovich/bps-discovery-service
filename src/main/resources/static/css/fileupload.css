@@ -1,0 +1,33 @@
+<style media="screen">
+* {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: '';
+}
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+#app {
+    text-align: center;
+}
+.item{
+    position: left;
+    width: 100px;
+    height: 40px;
+    margin: 150px auto;
+}
+.btn{
+    display: block;
+    width: 100px;
+    height: 40px;
+    line-height: 40px;
+    background-color: #eee;
+    cursor: pointer;
+}
+.wrap{
+    margin-bottom: 5px;
+}
+</style>

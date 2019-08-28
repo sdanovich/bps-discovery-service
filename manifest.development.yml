@@ -1,0 +1,43 @@
+---
+applications:
+- name: bps-discovery
+  memory: 756M
+  env:
+    SPRING_PROFILES_ACTIVE: dev-pcf
+    CONTEXT_PATH: /bps/discovery/v0.1/
+    APP_NAME: bps-discovery
+    APP_PORT: 8080
+    PROXY_REQUIRED: false
+    PROXT_HOST: dummy.mastercard.int
+    PROXT_PORT: 16521
+    DB_ACTION: drop
+    DATASOURCE_JOURNAL: "jdbc:postgresql://dev4lab0.labs.mastercard.com:9983/bps?currentSchema=journal&ApplicationName=bps-discovery-dev"
+    TRACK_POST_URL_DISCOVERY: https://bps-discovery.development.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/track/client/api
+    BPS_DIRECTORY_LANDING: https://bps-discovery.development.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1
+    BPS_RULES_LANDING: https://bps-rules.development.apps.stl.ldn-dev-pas.mastercard.int/bps/rules/v0.1
+    BPS_RFP_PAYMENT: https://bps-adapter-pnc.development.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
+    BPS_USBANK_PAYMENT: https://bps-service.development.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification
+    BPS_VERSAPAY_PAYMENT: https://demo.versapay.com/mastercard/bps/payment
+    BPS_BOOST_PAYMENT: http://dev4lab0.labs.mastercard.com:9970/api/v1/payment-request/
+    LOGGING_SECURITY: DEBUG
+    LOGGING_WEB: DEBUG
+    LOGGING_0: DEBUG
+    LOGGING_SLF4J: debug
+    LOGGING_MASTERCARD: DEBUG
+    JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=dev-pcf
+    VAULT_ENABLED: true
+    VAULT_TOKEN: s.b7XAtDzxvBxnWGJweeolHS2A
+    VAULT_ADDR: https://dev.labs.mastercard.com
+    VAULT_TRUSTSTORE: dev.labs.mastercard.com.jks
+    VAULT_PASSWORD: changeit
+    KEYSTORE_CAAS: caas_v1_keystore.jks
+    KEYSTOREPASS: YgjiIGxx
+    TRUSTSTORE: caas_v1_truststore.jks
+    TRUSTSTOREPASS: changeit
+    CAAS_CRYPTO_ENABLED: false
+    CAASV1_ENDPOINT: https://stage.mastercard.int:25027/CaaS/services/CryptoService
+    CAASV1_HASH_SALT: 56335c0258f7e707
+  buildpacks:
+  - java_buildpack_offline
+
+  timeout: 320

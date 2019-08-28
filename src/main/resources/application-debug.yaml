@@ -1,0 +1,49 @@
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
+spring:
+  profiles:
+    include: caas
+  main:
+    allow-bean-definition-overriding: "true"
+  jackson:
+    default-property-inclusion: NON_NULL
+  datasource:
+    username: bpsservice
+    password: bps!2345
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        web: DEBUG
+        0: DEBUG
+      hibernate:
+        type: TRACE
+webhook:
+  secretKey: v7aJHjbbxASKiwDW5wq6
+server:
+  port: "9988"
+
+discovery:
+  delimiter: "|"
+  businessId: "bpsBusinessId"
+  trackPostUrl: http://localhost:9988/bps/discovery/v0.1/track/client/api
+
+journal:
+  datasource:
+    url: jdbc:postgresql://localhost:9981/bps?currentSchema=journal&ApplicationName=bpsservice-directorydebug
+    driver-class-name: org.postgresql.Driver
+
+swagger:
+  url:
+    rules: http://localhost:9985/bps/rules/v0.1
+    directory: http://localhost:9987/bps/directory/v0.1
+    landing: http://localhost:9988/bps-discovery/api/v0.1/swagger.html
+    tokenAccess: http://localhost:9981/bps-auth/realms/test/protocol/openid-connect/token
+url:
+  validator: ${swagger.url.rules}/validations
+  authorization: ${swagger.url.rules}/pre-validations
+

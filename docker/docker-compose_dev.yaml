@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+
+  api:
+    image: ${DOCKER_REGISTRY_PREFIX-art4lab0.labs.mastercard.com:5001/}com.mastercard.labs.bps/bps-discovery-docker/dev:latest
+    ports:
+      - "9987:9987"
+    environment:
+      - CONTEXT_PATH=/bps-api/discovery/v0.1/
+      - SPRING_PROFILES_ACTIVE=dev
+      - VAULT_ENABLED=false
+      - VAULT_TOKEN=s.b7XAtDzxvBxnWGJweeolHS2A
+      - VAULT_ADDR=https://dev.labs.mastercard.com
+      - APP_PORT=9987
+      - PROXY_REQUIRED=true
+      - PROXT_HOST=dummy.mastercard.int
+      - PROXT_PORT=16521
+      - DATASOURCE_DIRECTORY=jdbc:postgresql://dev4lab0.labs.mastercard.com:9981/bps?currentSchema=discovery&ApplicationName=bps-discovery-docker
+      - DATASOURCE_JOURNAL=jdbc:postgresql://dev4lab0.labs.mastercard.com:9981/bps?currentSchema=journal&ApplicationName=bps-discovery-docker
+      - TRACK_POST_URL_DISCOVERY=https://bps-discovery.development.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/track/client/api
+      - BPS_DIRECTORY_LANDING=https://dev4lab0.labs.mastercard.com:9987/bps/discovery/v0.1/swagger-ui.html
+      - BPS_RULES_LANDING=https://dev4lab0.labs.mastercard.com:9985/bps/rules/v0.1
+      - LOGGING_SECURITY=DEBUG
+      - LOGGING_WEB=DEBUG
+      - LOGGING_0=DEBUG
+      - LOGGING_SLF4J=debug
+      - LOGGING_MASTERCARD=DEBUG
+      - JAVA_OPTS=-Djava.security.egd=file:/dev/./urandom
+      - VAULT_TRUSTSTORE=classpath:dev.labs.mastercard.com.jks
+      - VAULT_PASSWORD=changeit
+      - KEYSTORE_CAAS=classpath:caas_v1_keystore.jks
+      - KEYSTOREPASS=YgjiIGxx
+      - TRUSTSTORE=classpath:caas_v1_truststore.jks
+      - TRUSTSTOREPASS=changeit
+      - CAAS_CRYPTO_ENABLED=false
+      - CAASV1_ENDPOINT=https://stage.mastercard.int:25027/CaaS/services/CryptoService
+      - CAASV1_HASH_SALT=56335c0258f7e707
+    volumes:
+      - /var/backup/docker/logs/bps-api/:/var/backup/docker/logs/

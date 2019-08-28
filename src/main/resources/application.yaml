@@ -1,0 +1,127 @@
+springfox:
+  documentation:
+    swagger:
+      v2:
+        path: /api-docs
+server:
+  servlet:
+    context-path: ${CONTEXT_PATH:/bps/discovery/v0.1/}
+  port: ${APP_PORT:9987}
+  ssl:
+    enabled: false
+proxy:
+  required: ${PROXY_REQUIRED}
+  host: ${PROXT_HOST}
+  port: ${PROXT_PORT}
+bps:
+  core:
+      crypto:
+        impl: caas
+crypto-service-client:
+  enabled: ${CAAS_CRYPTO_ENABLED}
+  caasv1:
+    endpoint: ${CAASV1_ENDPOINT}
+    hashSalt: ${CAASV1_HASH_SALT}
+
+spring:
+  profiles:
+    include: caas
+  main:
+    allow-bean-definition-overriding: "true"
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    show-sql: true
+    properties:
+      javax:
+        persistence:
+          validation:
+            mode: none
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  datasource:
+    hikari:
+      connection-timeout: 300
+      idle-timeout: 60000
+      minimum-idle: 2
+      max-lifetime: 60000
+      maximum-pool-size: 10
+    password: bps!2345
+    username: bpsservice
+  resources:
+    add-mappings: true
+
+discovery:
+  delimiter: "|"
+  businessId: "bpsBusinessId"
+  trackPostUrl: ${TRACK_POST_URL_DISCOVERY}
+
+journal:
+  datasource:
+    url: ${DATASOURCE_JOURNAL}
+    username: bpsservice
+    password: bps!2345
+    driver-class-name: org.postgresql.Driver
+
+swagger:
+  url:
+    directory: ${BPS_DIRECTORY_LANDING}
+    landing: ${BPS_DIRECTORY_LANDING}
+    rules: ${BPS_RULES_LANDING:http://localhost:9985/bps/rules/v0.1}
+
+directory:
+    supplierByTrackId: /company/track/{trackid}/suppliers
+    suppliersByTaxId: /company/{taxid}/suppliers
+    buyerByTrackId: /company/track/{trackid}/buyers
+
+webhook:
+  tolerance: 60
+  headerName: X-Hub-Signature
+
+management:
+  cloudfoundry:
+    skip-ssl-validation: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+    beans:
+      cache:
+        time-to-live: "10s"
+  endpoint:
+    health:
+      enabled: true
+      show-details: "always"
+org:
+  slf4j:
+    simpleLogger:
+      defaultLogLevel: ${LOGGING_SLF4J}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: ${LOGGING_SECURITY}
+        web: ${LOGGING_WEB}
+        0: ${LOGGING_0}
+      hibernate: TRACE
+    com:
+      mastercard: ${LOGGING_MASTERCARD}
+      springframework:
+        core:
+          log: ERROR
+
+resources:
+  search:
+    criteria-size: 100
+    output-size: 2500
+
+retry:
+  attempts: 5
+  interval: 1000
