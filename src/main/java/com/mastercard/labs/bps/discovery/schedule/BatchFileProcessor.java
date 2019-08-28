@@ -53,6 +53,7 @@ public class BatchFileProcessor {
     @Value("${directory.buyerByTrackId}")
     private String pathToBuyer;
 
+    private static final String INCONCLUSIVE_STR = "Inconclusive";
 
     @Scheduled(fixedRate = 1000 * 20)
     public void process() {
@@ -131,20 +132,23 @@ public class BatchFileProcessor {
                                     }
                                 } else {
                                     discovery.setFound(Discovery.EXISTS.N);
-                                    discovery.setReason("ERROR: " + "Empty result");
+                                    discovery.setReason(INCONCLUSIVE_STR);
+                                    log.info("ERROR: Empty result");
                                 }
                             }
 
                         } else {
                             discovery.setFound(Discovery.EXISTS.I);
                             discovery.setStatus(STATUS.FAILED);
-                            discovery.setReason("ERROR: " + trackResponseModelResponseEntity.getStatusCodeValue());
+                            discovery.setReason(INCONCLUSIVE_STR);
+                            log.info("ERROR: " + trackResponseModelResponseEntity.getStatusCodeValue());
                         }
 
                     } catch (Exception e) {
                         discovery.setFound(Discovery.EXISTS.I);
                         discovery.setStatus(STATUS.FAILED);
-                        discovery.setReason(e.getMessage());
+                        discovery.setReason(INCONCLUSIVE_STR);
+                        log.error(e.getMessage(), e.getLocalizedMessage(), e);
                     }
                     discoveryRepository.save(discovery);
                 });
