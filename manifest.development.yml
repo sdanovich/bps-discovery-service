@@ -13,7 +13,7 @@ applications:
     DB_ACTION: drop
     DATASOURCE_JOURNAL: "jdbc:postgresql://dev4lab0.labs.mastercard.com:9983/bps?currentSchema=journal&ApplicationName=bps-discovery-dev"
     TRACK_POST_URL_DISCOVERY: https://bps-discovery.development.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/track/client/api
-    BPS_DIRECTORY_LANDING: https://bps-discovery.development.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1
+    BPS_DIRECTORY_LANDING: https://bps-directory.development.apps.stl.ldn-dev-pas.mastercard.int/bps/directory/v0.1
     BPS_RULES_LANDING: https://bps-rules.development.apps.stl.ldn-dev-pas.mastercard.int/bps/rules/v0.1
     BPS_RFP_PAYMENT: https://bps-adapter-pnc.development.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
     BPS_USBANK_PAYMENT: https://bps-service.development.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification

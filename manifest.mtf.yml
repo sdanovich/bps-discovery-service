@@ -13,7 +13,7 @@ applications:
     PROXT_PORT: 16521
     DATASOURCE_JOURNAL: "jdbc:postgresql://labspgpilot1.mastercard.int:6432/bpsrestservice_sbx?currentSchema=journal&ApplicationName=bps-journel-mtf"
     TRACK_POST_URL_DISCOVERY: https://bps-discovery.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/discovery/v0.1/track/client/api
-    BPS_DIRECTORY_LANDING: https://bps-discovery.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/discovery/v0.1/
+    BPS_DIRECTORY_LANDING: https://bps-directory.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/directory/v0.1
     BPS_RFP_PAYMENT: https://bps-adapter-pnc.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
     BPS_USBANK_PAYMENT: https://bps-service.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification
     BPS_VERSAPAY_PAYMENT: https://demo.versapay.com/mastercard/bps/payment

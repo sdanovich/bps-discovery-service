@@ -12,7 +12,7 @@ applications:
     PROXT_PORT: 16521
     DATASOURCE_JOURNAL: "jdbc:postgresql://dock4lab0.labs.mastercard.com:9981/bps?currentSchema=journal&ApplicationName=bps-discovery-qa"
     TRACK_POST_URL_DISCOVERY: https://bps-discovery.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/track/client/api
-    BPS_DIRECTORY_LANDING: https://bps-discovery.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/swagger-ui.html
+    BPS_DIRECTORY_LANDING: https://bps-directory.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/directory/v0.1
     BPS_RULES_LANDING:  https://bps-rules.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/rules/v0.1
     LOGGING_SECURITY: DEBUG
     LOGGING_WEB: DEBUG

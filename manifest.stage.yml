@@ -12,7 +12,7 @@ applications:
     PROXT_PORT: 16521
     DATASOURCE_JOURNAL: "jdbc:postgresql://10.157.193.232:6432/bpsrestservice?currentSchema=journal&ApplicationName=bps-discovery-stage"
     TRACK_POST_URL_DISCOVERY: https://bps-discovery.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/track/client/api
-    BPS_DIRECTORY_LANDING: https://bps-discovery.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/swagger-ui.html
+    BPS_DIRECTORY_LANDING: https://bps-directory.apps.stl.ldn-dev-pas.mastercard.int/bps/directory/v0.1
     BPS_RFP_PAYMENT: https://bps-adapter-pnc.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
     BPS_USBANK_PAYMENT: https://bps-service.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification
     BPS_VERSAPAY_PAYMENT: https://demo.versapay.com/mastercard/bps/payment

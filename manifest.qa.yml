@@ -12,7 +12,7 @@ applications:
     PROXT_PORT: 16521
     DATASOURCE_JOURNAL: "jdbc:postgresql://dock4lab0.labs.mastercard.com:9981/bps?currentSchema=journal&ApplicationName=bps-discovery-qa"
     TRACK_POST_URL_DISCOVERY: https://bps-discovery.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/track/client/api
-    BPS_DIRECTORY_LANDING: https://bps-discovery.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1/swagger-ui.html
+    BPS_DIRECTORY_LANDING: https://bps-directory.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/directory/v0.1
     BPS_RFP_PAYMENT: https://bps-adapter-pnc.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
     BPS_USBANK_PAYMENT: https://bps-service.qa.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification
     BPS_VERSAPAY_PAYMENT: https://demo.versapay.com/mastercard/bps/payment
