@@ -3,8 +3,6 @@ package com.mastercard.labs.bps.discovery.api;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.service.RestTemplateServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.hamcrest.core.StringStartsWith;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.ExecutionException;
 
@@ -29,10 +26,6 @@ public class ApiTest {
 
     @Autowired
     private RestTemplateServiceImpl restTemplateService;
-
-    @Autowired
-    private RestTemplate sslRestTemplate;
-
 
     @Test
     public void testCallToTrack() {
