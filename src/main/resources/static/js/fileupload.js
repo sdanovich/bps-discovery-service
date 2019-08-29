@@ -97,8 +97,8 @@
 				this.show1 = !this.show1;
 			},
 			toggleShow2: function toggleShow2() {
-				this.show2 = !this.show2;
-			}
+                        this.show2 = !this.show2;
+                    }
 		},
 		events: {
 			uploadSuccess: function uploadSuccess(data, field, key) {
@@ -108,8 +108,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			},
 			uploadFail: function uploadFail(status, field, key) {
 				console.log('-------- FAILURE --------');
@@ -118,8 +119,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			}
 		}
 	});
@@ -142,8 +144,8 @@
 				this.show1 = !this.show1;
 			},
 			toggleShow2: function toggleShow2() {
-				this.show2 = !this.show2;
-			}
+                        this.show2 = !this.show2;
+                    }
 		},
 		events: {
 			uploadSuccess: function uploadSuccess(data, field, key) {
@@ -153,8 +155,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			},
 			uploadFail: function uploadFail(status, field, key) {
 				console.log('-------- FAILURE --------');
@@ -163,8 +166,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			}
 		}
 	});
@@ -187,8 +191,8 @@
 				this.show1 = !this.show1;
 			},
 			toggleShow2: function toggleShow2() {
-				this.show2 = !this.show2;
-			}
+                        this.show2 = !this.show2;
+                    }
 		},
 		events: {
 			uploadSuccess: function uploadSuccess(data, field, key) {
@@ -198,8 +202,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			},
 			uploadFail: function uploadFail(status, field, key) {
 				console.log('-------- FAILURE --------');
@@ -208,8 +213,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			}
 		}
 	});
@@ -231,8 +237,8 @@
 				this.show1 = !this.show1;
 			},
 			toggleShow2: function toggleShow2() {
-				this.show2 = !this.show2;
-			}
+                        this.show2 = !this.show2;
+                    }
 		},
 		events: {
 			uploadSuccess: function uploadSuccess(data, field, key) {
@@ -242,8 +248,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			},
 			uploadFail: function uploadFail(status, field, key) {
 				console.log('-------- FAILURE --------');
@@ -252,8 +259,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			}
 		}
 	});
@@ -275,8 +283,8 @@
 				this.show1 = !this.show1;
 			},
 			toggleShow2: function toggleShow2() {
-				this.show2 = !this.show2;
-			}
+                        this.show2 = !this.show2;
+                    }
 		},
 		events: {
 			uploadSuccess: function uploadSuccess(data, field, key) {
@@ -286,8 +294,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			},
 			uploadFail: function uploadFail(status, field, key) {
 				console.log('-------- FAILURE --------');
@@ -296,8 +305,9 @@
 				console.log('key: ' + key);
                 setTimeout(() => {
                         this.show2 = !this.show2;
+                        window.location.reload();
                     }, 5000);
-                location.reload();
+
 			}
 		}
 	});

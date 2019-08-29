@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Validator;
 import java.util.Arrays;
@@ -36,6 +37,12 @@ public class ValidationService {
 
     @Autowired
     private RestTemplateServiceImpl restTemplateService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private RestTemplate externalSSLRestTemplate;
 
     @Value("${directory.suppliersByTaxId}")
     private String pathToSuppliersByTaxId;
@@ -161,7 +168,7 @@ public class ValidationService {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ruleEngine + "/rules/existForSuppliers")
                 .queryParam("supplierProfileId", collectIds);
         try {
-            ResponseEntity<String> requestData = restTemplateService.restTemplate().exchange(builder.toUriString(),
+            ResponseEntity<String> requestData = ((ruleEngine.startsWith("https")) ? externalSSLRestTemplate : restTemplate).exchange(builder.toUriString(),
                     HttpMethod.GET, null, String.class);
             return requestData.getStatusCode().is2xxSuccessful() ? true : false;
         } catch (Exception e) {
