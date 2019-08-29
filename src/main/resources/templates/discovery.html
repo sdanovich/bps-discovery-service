@@ -23,7 +23,7 @@
             <tr>
                 <th v-for="key in columns"
                     @click="sortBy(key)"
-                    :class="{ active: sortKey == key }">
+                    :class="{ active: sortKey == key }" style="font-family: sans-serif">
                     {{ key | capitalize }}
                     <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
           </span>
@@ -38,15 +38,15 @@
                                                    width="25"></a>
                     </div>
                     <div v-else-if="entry[key].toLowerCase() === 'received'">
-                        <div style="background-color: #ffff33">Uploaded</div>
+                        <div style="background-color: #ffff33;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Uploaded</div>
                     </div>
                     <div v-else-if="entry[key].toLowerCase() === 'processing'">
-                        <div style="background-color: #cc6600">Processing</div>
+                        <div style="background-color: #cc6600;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Processing</div>
                     </div>
                     <div v-else-if="entry[key].toLowerCase() === 'complete'">
-                        <div style="background-color: #32C367">Complete</div>
+                        <div style="background-color: #32C367;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Complete</div>
                     </div>
-                    <div v-else>{{entry[key]}}</div>
+                    <div v-else style="font-family: sans-serif">{{entry[key]}}</div>
                 </td>
             </tr>
             </tbody>
@@ -226,7 +226,7 @@
 <!-- Footer -->
 <footer class="py-5 bg-dark">
     <div class="container">
-        <p class="m-0 text-center text-white">BPS Discovery &copy;
+        <p class="m-0 text-center text-white" style="font-family: sans-serif">BPS Discovery &copy;
             <script>document.write(new Date().getFullYear())</script>
         </p>
     </div>

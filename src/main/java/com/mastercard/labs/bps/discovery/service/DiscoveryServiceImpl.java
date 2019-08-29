@@ -66,8 +66,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         COUNTRY(DiscoveryConst.COUNTRY),
         STATE(DiscoveryConst.STATE_PROVINCE),
         ADDRESS_1(DiscoveryConst.ADDRESS_LINE_1),
-        COMPANY_NAME(DiscoveryConst.COMPANY_NAME),
-        FILE_EXT(DiscoveryConst.FILE_EXT);
+        COMPANY_NAME(DiscoveryConst.COMPANY_NAME);
 
         private String value;
 
@@ -99,8 +98,6 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             } catch (IOException e) {
                 log.error(e.getMessage(), e.getLocalizedMessage(), e);
             }
-        } else {
-            validations.add(VALIDATION.FILE_EXT);
         }
         return validations;
     }
