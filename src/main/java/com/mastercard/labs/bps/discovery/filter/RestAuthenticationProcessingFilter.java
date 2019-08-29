@@ -26,7 +26,7 @@ public class RestAuthenticationProcessingFilter implements Filter {
     @Value("${webhook.headerName}")
     private String webhookHeaderName;
 
-    //@Value("${webhook.secretKey}")
+    @Value("${webhook.secretKey}")
     private String apiKey;
 
     @Override
