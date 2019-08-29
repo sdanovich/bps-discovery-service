@@ -92,7 +92,6 @@ directory:
     buyerByTrackId: /company/track/{trackid}/buyers
 
 webhook:
-  secretKey: xxxxxxxxxxxxxx
   tolerance: 60
   headerName: X-Hub-Signature
 
