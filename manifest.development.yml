@@ -14,6 +14,7 @@ applications:
     DATASOURCE_JOURNAL: "jdbc:postgresql://dev4lab0.labs.mastercard.com:9983/bps?currentSchema=journal&ApplicationName=bps-discovery-dev"
     TRACK_POST_URL_DISCOVERY: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
     TRACK_POST_AUTH_DISCOVERY: https://login.microsoftonline.com/37af61b9-427a-446d-9060-91e85a4913dc/oauth2/v2.0/token
+    BPS_DISCOVERY_LANDING: https://bps-discovery.development.apps.stl.ldn-dev-pas.mastercard.int/bps/discovery/v0.1
     BPS_DIRECTORY_LANDING: https://bps-directory.development.apps.stl.ldn-dev-pas.mastercard.int/bps/directory/v0.1
     BPS_RULES_LANDING: https://bps-rules.development.apps.stl.ldn-dev-pas.mastercard.int/bps/rules/v0.1
     BPS_RFP_PAYMENT: https://bps-adapter-pnc.development.apps.stl.ldn-dev-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment

@@ -12,7 +12,9 @@ applications:
     PROXT_HOST: labsidcproxy.mastercard.int
     PROXT_PORT: 16521
     DATASOURCE_JOURNAL: "jdbc:postgresql://labspgpilot1.mastercard.int:6432/bpsrestservice?currentSchema=journal&ApplicationName=bps-directory-prod"
-    TRACK_POST_URL_DISCOVERY: https://bps-directory.apps.dal.idc-prod-pas.mastercard.int/bps/directory/v0.1/track/client/api
+    TRACK_POST_URL_DISCOVERY: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
+    TRACK_POST_AUTH_DISCOVERY: https://login.microsoftonline.com/37af61b9-427a-446d-9060-91e85a4913dc/oauth2/v2.0/token
+    BPS_DISCOVERY_LANDING: https://bps-discovery.apps.dal.idc-prod-pas.mastercard.int/bps/discovery/v0.1
     BPS_DIRECTORY_LANDING: https://bps-directory.apps.dal.idc-prod-pas.mastercard.int/bps/directory/v0.1
     BPS_RFP_PAYMENT: https://bps-adapter-pnc.apps.dal.idc-prod-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
     BPS_USBANK_PAYMENT: https://bps-service.apps.dal.idc-prod-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification
