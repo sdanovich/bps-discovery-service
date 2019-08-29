@@ -11,7 +11,7 @@ spring:
         kv:
           application-name: application
           enabled: true
-          backend: ${APP_NAME:bps-discovery}
+          backend: ${VAULT_BACKEND:bps-api}
           default-context:
         generic:
           enabled: false

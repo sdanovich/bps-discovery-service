@@ -32,6 +32,7 @@ applications:
     VAULT_ADDR: https://dev.labs.mastercard.com
     VAULT_TRUSTSTORE: dev.labs.mastercard.com.jks
     VAULT_PASSWORD: changeit
+    VAULT_BACKEND: bps-api
     KEYSTORE_CAAS: caas_v1_keystore.jks
     KEYSTOREPASS: YgjiIGxx
     TRUSTSTORE: caas_v1_truststore.jks
