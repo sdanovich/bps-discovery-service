@@ -163,8 +163,8 @@ public class ValidationService {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ruleEngine + "/rules/existForSuppliers")
                 .queryParam("supplierProfileId", collectIds);
         try {
-            ResponseEntity<String> requestData = restTemplateService.getRestTemplate(ruleEngine).exchange(builder.toUriString(),
-                    HttpMethod.GET, null, String.class);
+            ResponseEntity<?> requestData = restTemplateService.getRestTemplate(ruleEngine).exchange(builder.toUriString(),
+                    HttpMethod.GET, null, Object.class);
             return requestData.getStatusCode().is2xxSuccessful() ? true : false;
         } catch (Exception e) {
             return false;
