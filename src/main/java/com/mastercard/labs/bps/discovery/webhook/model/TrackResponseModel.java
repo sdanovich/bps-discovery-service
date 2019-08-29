@@ -1446,7 +1446,7 @@ public class TrackResponseModel implements Serializable {
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    class Link implements Serializable {
+    public static class Link implements Serializable {
 
         @JsonProperty("trackId")
         private String trackId;

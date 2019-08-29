@@ -23,6 +23,7 @@ public class TrackRequestModel {
         private String tin;
         private String companyName;
         private String id;
+        private String requestType;
 
     }
 

@@ -17,10 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Validator;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +38,9 @@ public class ValidationService {
 
     @Autowired
     private RestTemplateServiceImpl restTemplateService;
+
+    @Autowired
+    private RestTemplate sslRestTemplate;
 
     @Value("${directory.suppliersByTaxId}")
     private String pathToSuppliersByTaxId;
@@ -65,13 +70,14 @@ public class ValidationService {
                                 TrackRequestModel.RequestDetail requestDetail = new TrackRequestModel.RequestDetail();
                                 requestDetail.setAddress(address);
                                 requestDetail.setCompanyName(a.getCompanyName());
-                                requestDetail.setId(a.getId());
+                                requestDetail.setId("1");
                                 requestDetail.setTin(a.getTaxId());
+                                requestDetail.setRequestType("premium");
                                 TrackRequestModel.RequestHeader requestHeader = new TrackRequestModel.RequestHeader();
                                 requestHeader.setBusinessId(businessId);
-                                requestHeader.setOrderId(a.getId());
+                                requestHeader.setOrderId(UUID.randomUUID().toString());
                                 requestHeader.setOrderType("new");
-                                requestHeader.setMatchType("highconfidence");
+                                requestHeader.setMatchType("HIGHCONFIDENCE");
                                 b.setRequestDetail(Arrays.asList(requestDetail));
                                 b.setRequestHeader(requestHeader);
                             }
@@ -161,8 +167,8 @@ public class ValidationService {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ruleEngine + "/rules/existForSuppliers")
                 .queryParam("supplierProfileId", collectIds);
         try {
-            ResponseEntity<String> requestData = restTemplateService.restTemplate().exchange(builder.toUriString(),
-                    HttpMethod.GET, null, String.class);
+            ResponseEntity<?> requestData = sslRestTemplate.exchange(builder.toUriString(),
+                    HttpMethod.GET, null, Object.class);
             return requestData.getStatusCode().is2xxSuccessful() ? true : false;
         } catch (Exception e) {
             return false;

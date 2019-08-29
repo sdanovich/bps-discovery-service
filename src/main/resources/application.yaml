@@ -59,8 +59,19 @@ spring:
 
 discovery:
   delimiter: "|"
-  businessId: "bpsBusinessId"
-  trackPostUrl: ${TRACK_POST_URL_DISCOVERY}
+  businessId: ${TRACK_BUSINESS_ID}
+
+track:
+  auth:
+    url: ${TRACK_POST_AUTH_DISCOVERY}
+    grantType: client_credentials
+    client:
+      assertionType: ${TRACK_AUTH_CLIENT_ASSERTION_TYPE}
+      assertion: ${TRACK_AUTH_CLIENT_ASSERTION}
+      id: ${TRACK_AUTH_CLIENT_ID}
+    scope: ${TRACK_AUTH_SCOPE}
+  post:
+    singleVendorDetail: ${TRACK_POST_URL_DISCOVERY}
 
 journal:
   datasource:
