@@ -5,8 +5,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery.STATUS;
+import com.mastercard.labs.bps.discovery.exceptions.ValidationException;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
+import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
 import com.mastercard.labs.bps.discovery.service.RestTemplateServiceImpl;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
 import com.mastercard.labs.bps.discovery.webhook.model.BuyerAgent;
@@ -43,6 +45,9 @@ public class BatchFileProcessor {
 
     @Autowired
     private RestTemplateServiceImpl restTemplateService;
+
+    @Autowired
+    private DiscoveryServiceImpl discoveryService;
 
     @Value("${discovery.delimiter}")
     private char delimiter;
@@ -103,6 +108,10 @@ public class BatchFileProcessor {
                     discovery.setCompanyName(map.get(DiscoveryConst.COMPANY_NAME));
                     try {
                         discovery = discoveryRepository.save(discovery);
+                        if(batchFile.getType() == BatchFile.TYPE.REGISTRATION && !discoveryService.isDiscoveryValid(discovery)) {
+                            discovery.setReason("Registration Error - Missing required fields");
+                            throw new ValidationException(discovery.getReason());
+                        }
                         ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity = restTemplateService.callTrack(discovery).get();
                         if (trackResponseModelResponseEntity.getStatusCode().is2xxSuccessful()) {
                             discovery.setStatus(STATUS.COMPLETE);
@@ -124,7 +133,7 @@ public class BatchFileProcessor {
                                             if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
                                                 discovery.setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToBuyer, "{trackid}", responseDetails.get(0).getRequestData().getTrackId()), BuyerAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                             } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
-                                                discovery.setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToSupplier,"{trackid}", responseDetails.get(0).getRequestData().getTrackId()), SupplierAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                                discovery.setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToSupplier, "{trackid}", responseDetails.get(0).getRequestData().getTrackId()), SupplierAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                             }
                                         }
                                     } else {

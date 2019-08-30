@@ -8,8 +8,6 @@ import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
 import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelFull;
 import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelPartial;
-import com.mastercard.labs.bps.discovery.webhook.model.TrackRequestModel;
-import com.mastercard.labs.bps.discovery.webhook.model.TrackResponseModel;
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,11 +29,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.databind.MapperFeature.SORT_PROPERTIES_ALPHABETICALLY;
-import static java.util.Collections.singletonList;
 
 @RestController
 @ApiIgnore
@@ -76,12 +72,7 @@ public class DiscoveryController {
     }
 
     private ResponseEntity<Link> getLinkResponseEntity(BatchFile batchFile, String entity) throws MalformedURLException {
-        Set<DiscoveryServiceImpl.VALIDATION> validations = discoveryService.isBatchValid(batchFile);
-        if (!validations.isEmpty()) {
-            return new ResponseEntity(new Link(null, validations.stream().map(v -> "Error: " + v.getValue() + " is required").toArray(String[]::new)), HttpStatus.BAD_REQUEST);
-        } else {
-            return ResponseEntity.ok(new Link(getUri(entity, batchFile).toASCIIString(), null));
-        }
+        return ResponseEntity.ok(new Link(getUri(entity, batchFile).toASCIIString(), null));
     }
 
     private <T> ResponseEntity handleFile(String id, BoundMapperFacade<Discovery, T> boundMapperFacade, Class<T> model) {
@@ -117,34 +108,6 @@ public class DiscoveryController {
         return ResponseEntity.ok(discoveryService.getBatches(timeZone));
     }
 
-
-    @PostMapping(value = "/track/client/api", produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<TrackResponseModel> fromTrackToBPS(@RequestBody TrackRequestModel trackModel) throws
-            IOException {
-        TrackResponseModel trackResponseModel = new TrackResponseModel();
-        TrackResponseModel.MatchScoreData matchScoreData = new TrackResponseModel.MatchScoreData();
-        TrackResponseModel.MatchResults matchResults = new TrackResponseModel.MatchResults();
-        TrackResponseModel.RequestData requestData = new TrackResponseModel.RequestData();
-
-        if (trackModel.getRequestDetail().get(0).getCompanyName().equalsIgnoreCase("United") ||
-                trackModel.getRequestDetail().get(0).getCompanyName().contains("United") ||
-                trackModel.getRequestDetail().get(0).getCompanyName().equalsIgnoreCase("BNP") ||
-                trackModel.getRequestDetail().get(0).getCompanyName().contains("BNP")) {
-            matchScoreData.setMatchPercentage(1);
-            matchResults.setMatchStatus("Inconclusive");
-            requestData.setTrackId("12323434");
-        } else {
-            matchScoreData.setMatchPercentage(2);
-            matchResults.setMatchStatus("High Confidence");
-            requestData.setTrackId("12345567");
-        }
-        matchResults.setMatchScoreData(matchScoreData);
-        TrackResponseModel.ResponseDetail responseDetail = new TrackResponseModel.ResponseDetail();
-        responseDetail.setRequestData(requestData);
-        responseDetail.setMatchResults(matchResults);
-        trackResponseModel.setResponseDetail(singletonList(responseDetail));
-        return ResponseEntity.ok(trackResponseModel);
-    }
 
     @Getter
     @Setter

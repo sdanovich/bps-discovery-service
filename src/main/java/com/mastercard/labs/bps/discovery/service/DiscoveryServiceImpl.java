@@ -1,7 +1,5 @@
 package com.mastercard.labs.bps.discovery.service;
 
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
@@ -17,12 +15,14 @@ import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,20 +62,36 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     public enum VALIDATION {
-        ZIP(DiscoveryConst.ZIP),
-        COUNTRY(DiscoveryConst.COUNTRY),
-        STATE(DiscoveryConst.STATE_PROVINCE),
-        ADDRESS_1(DiscoveryConst.ADDRESS_LINE_1),
-        COMPANY_NAME(DiscoveryConst.COMPANY_NAME);
+        ZIP(DiscoveryConst.ZIP, "^[0-9]{5}$"),
+        COUNTRY(DiscoveryConst.COUNTRY, "^[a-zA-Z]{2}|[a-zA-Z]{3}$"),
+        STATE(DiscoveryConst.STATE_PROVINCE, "^[a-zA-Z]{2}$"),
+        ADDRESS_1(DiscoveryConst.ADDRESS_LINE_1, "([0-9a-zA-Z _\\-\\.,]+)"),
+        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "([0-9a-zA-Z _\\-\\.,]+)"),
+        CITY(DiscoveryConst.CITY, "([a-zA-Z -\\.]+)");
 
         private String value;
+        private String regex;
 
-        VALIDATION(String value) {
+        VALIDATION(String value, String regex) {
             this.value = value;
+            this.regex = regex;
         }
 
         public String getValue() {
             return value;
+        }
+
+        public static boolean validate(Discovery discovery) {
+            if (discovery != null) {
+                return Pattern.compile(ADDRESS_1.regex).matcher(Optional.ofNullable(discovery.getAddress1()).orElse("")).matches() &
+                        Pattern.compile(ZIP.regex).matcher(Optional.ofNullable(discovery.getZip()).orElse("")).matches() &
+                        Pattern.compile(COUNTRY.regex).matcher(Optional.ofNullable(discovery.getCountry()).orElse("")).matches() &
+                        Pattern.compile(STATE.regex).matcher(Optional.ofNullable(discovery.getState()).orElse("")).matches() &
+                        Pattern.compile(COMPANY_NAME.regex).matcher(Optional.ofNullable(discovery.getCompanyName()).orElse("")).matches() &
+                        Pattern.compile(CITY.regex).matcher(Optional.ofNullable(discovery.getCity()).orElse("")).matches();
+
+            }
+            return true;
         }
 
     }
@@ -85,21 +101,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     @Override
-    public Set<VALIDATION> isBatchValid(BatchFile batchFile) {
-        CsvSchema csvSchema = CsvSchema.builder().setUseHeader(true).build().withColumnSeparator(delimiter);
-        Set<VALIDATION> validations = new HashSet<>();
-        if (batchFile != null) {
-            CsvMapper csvMapper = new CsvMapper();
-            try {
-                csvMapper.readerFor(Map.class).with(csvSchema).readValues(byteEncryptor.decrypt(batchFile.getContent())).readAll().stream().filter(o -> o instanceof LinkedHashMap).map(o -> (LinkedHashMap<String, String>) o).forEach(map -> {
-                    validations.addAll(Stream.of(VALIDATION.values()).filter(v -> StringUtils.isEmpty(map.get(v.getValue()))).collect(Collectors.toSet()));
-                });
-                return validations;
-            } catch (IOException e) {
-                log.error(e.getMessage(), e.getLocalizedMessage(), e);
-            }
-        }
-        return validations;
+    public boolean isDiscoveryValid(Discovery discovery) {
+        return VALIDATION.validate(discovery);
     }
 
 
