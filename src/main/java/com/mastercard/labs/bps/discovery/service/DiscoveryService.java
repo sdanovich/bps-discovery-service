@@ -13,7 +13,7 @@ public interface DiscoveryService {
 
     BatchFile store(MultipartFile file, BatchFile.TYPE lookup, BatchFile.ENTITY supplier) throws IOException;
 
-    boolean isDiscoveryValid(Discovery discovery);
+    boolean isDiscoveryValid(Discovery discovery, BatchFile.ENTITY entity);
 
     List<DiscoveryTable> getBatches(Integer timeZone);
 }

@@ -9,6 +9,7 @@ import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
@@ -66,7 +67,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         COUNTRY(DiscoveryConst.COUNTRY, "^[a-zA-Z]{2}|[a-zA-Z]{3}$"),
         STATE(DiscoveryConst.STATE_PROVINCE, "^[a-zA-Z]{2}$"),
         ADDRESS_1(DiscoveryConst.ADDRESS_LINE_1, "([0-9a-zA-Z _\\-\\.,]+)"),
-        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "([0-9a-zA-Z _\\-\\.,]+)"),
+        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "^(\\S)+.buy@bps$"),
         CITY(DiscoveryConst.CITY, "([a-zA-Z -\\.]+)");
 
         private String value;
@@ -81,13 +82,13 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             return value;
         }
 
-        public static boolean validate(Discovery discovery) {
+        public static boolean validate(Discovery discovery, BatchFile.ENTITY entity) {
             if (discovery != null) {
                 return Pattern.compile(ADDRESS_1.regex).matcher(Optional.ofNullable(discovery.getAddress1()).orElse("")).matches() &
                         Pattern.compile(ZIP.regex).matcher(Optional.ofNullable(discovery.getZip()).orElse("")).matches() &
                         Pattern.compile(COUNTRY.regex).matcher(Optional.ofNullable(discovery.getCountry()).orElse("")).matches() &
-                        Pattern.compile(STATE.regex).matcher(Optional.ofNullable(discovery.getState()).orElse("")).matches() &
-                        Pattern.compile(COMPANY_NAME.regex).matcher(Optional.ofNullable(discovery.getCompanyName()).orElse("")).matches() &
+                        StringUtils.equalsAnyIgnoreCase(discovery.getCountry(), "US", "USA") ? Pattern.compile(STATE.regex).matcher(Optional.ofNullable(discovery.getState()).orElse("")).matches() : StringUtils.isBlank(discovery.getState()) &
+                        entity == BatchFile.ENTITY.BUYER ? Pattern.compile(COMPANY_NAME.regex).matcher(Optional.ofNullable(discovery.getCompanyName()).orElse("")).matches() : true &
                         Pattern.compile(CITY.regex).matcher(Optional.ofNullable(discovery.getCity()).orElse("")).matches();
 
             }
@@ -101,8 +102,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     @Override
-    public boolean isDiscoveryValid(Discovery discovery) {
-        return VALIDATION.validate(discovery);
+    public boolean isDiscoveryValid(Discovery discovery, BatchFile.ENTITY entity) {
+        return VALIDATION.validate(discovery, entity);
     }
 
 

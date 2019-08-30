@@ -90,6 +90,7 @@ directory:
     supplierByTrackId: /company/track/{trackid}/suppliers
     suppliersByTaxId: /company/{taxid}/suppliers
     buyerByTrackId: /company/track/{trackid}/buyers
+    companyByTrackId: /company/track/{trackid}
 
 webhook:
   tolerance: 60
