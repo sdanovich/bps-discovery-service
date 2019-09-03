@@ -9,8 +9,8 @@ applications:
     APP_NAME: bps-api
     APP_PORT: 8080
     PROXY_REQUIRED: true
-    PROXT_HOST: labsidcproxy.mastercard.int
-    PROXT_PORT: 16521
+    PROXY_HOST: labsidcproxy.mastercard.int
+    PROXY_PORT: 16521
     DATASOURCE_JOURNAL: "jdbc:postgresql://labspgpilot1.mastercard.int:6432/bpsrestservice?currentSchema=journal&ApplicationName=bps-directory-prod"
     TRACK_POST_URL_DISCOVERY: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
     TRACK_POST_AUTH_DISCOVERY: https://login.microsoftonline.com/37af61b9-427a-446d-9060-91e85a4913dc/oauth2/v2.0/token

@@ -8,8 +8,8 @@ applications:
     APP_NAME: bps-discovery
     APP_PORT: 8080
     PROXY_REQUIRED: false
-    PROXT_HOST: dummy.mastercard.int
-    PROXT_PORT: 16521
+    PROXY_HOST: dummy.mastercard.int
+    PROXY_PORT: 16521
     DB_ACTION: drop
     DATASOURCE_JOURNAL: "jdbc:postgresql://dev4lab0.labs.mastercard.com:9983/bps?currentSchema=journal&ApplicationName=bps-discovery-dev"
     TRACK_POST_URL_DISCOVERY: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
