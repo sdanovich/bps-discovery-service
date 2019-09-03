@@ -1,6 +1,6 @@
 ---
 applications:
-- name: bps-discovery
+- name: bps-discovery-ui
   memory: 756M
   env:
     SPRING_PROFILES_ACTIVE: dev-pcf
