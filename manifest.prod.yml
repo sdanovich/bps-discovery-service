@@ -21,11 +21,11 @@ applications:
     BPS_VERSAPAY_PAYMENT: https://secure.versapay.com/mastercard/bps/payment
     BPS_BOOST_PAYMENT: http://pdock2dal2:9970/api/v1/payment-request/
     BPS_RULES_LANDING: https://bps-rules.apps.dal.idc-prod-pas.mastercard.int/bps/rules/v0.1
-    LOGGING_SECURITY: INFO
-    LOGGING_WEB: INFO
-    LOGGING_0: INFO
+    LOGGING_SECURITY: DEBUG
+    LOGGING_WEB: DEBUG
+    LOGGING_0: DEBUG
     LOGGING_SLF4J: debug
-    LOGGING_MASTERCARD: INFO
+    LOGGING_MASTERCARD: DEBUG
     JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=prod
     VAULT_ENABLED: true
     VAULT_TOKEN: s.BAFECNYIAIp99xvXjpdAw5Su

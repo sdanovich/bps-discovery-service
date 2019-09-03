@@ -21,17 +21,18 @@ applications:
     BPS_VERSAPAY_PAYMENT: https://demo.versapay.com/mastercard/bps/payment
     BPS_BOOST_PAYMENT: http://tbd:9970/api/v1/payment-request/
     BPS_RULES_LANDING: https://bps-rules.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/rules/v0.1
-    LOGGING_SECURITY: INFO
-    LOGGING_WEB: INFO
-    LOGGING_0: INFO
+    LOGGING_SECURITY: DEBUG
+    LOGGING_WEB: DEBUG
+    LOGGING_0: DEBUG
     LOGGING_SLF4J: debug
-    LOGGING_MASTERCARD: INFO
+    LOGGING_MASTERCARD: DEBUG
     JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=mtf
     VAULT_ENABLED: true
     VAULT_TOKEN: s.tqSX2boWshEpFmQV8mo8PKXR
     VAULT_ADDR: https://vaultidc.mastercard.int
     VAULT_TRUSTSTORE: vaultidc.mastercard.int.jks
     VAULT_PASSWORD: changeit
+    VAULT_BACKEND: bps-api-sbx
     KEYSTORE_CAAS: caas_v1_pilot_keystore.jks
     KEYSTOREPASS: YgjiIGxx
     TRUSTSTORE: caas_v1_pilot_truststore.jks
