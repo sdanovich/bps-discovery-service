@@ -1,10 +1,9 @@
 package com.mastercard.labs.bps.discovery.service;
 
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelFull;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelPartial;
-import com.mastercard.labs.bps.discovery.webhook.model.SupplierAgent;
-import com.mastercard.labs.bps.discovery.webhook.model.TrackRequestModel;
+import com.mastercard.labs.bps.discovery.domain.journal.Record;
+import com.mastercard.labs.bps.discovery.domain.journal.Registration;
+import com.mastercard.labs.bps.discovery.webhook.model.*;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MappingContext;
@@ -54,28 +53,7 @@ public class ValidationService {
                         new CustomMapper<Discovery, TrackRequestModel>() {
                             @Override
                             public void mapAtoB(Discovery a, TrackRequestModel b, MappingContext context) {
-                                TrackRequestModel.Address address = new TrackRequestModel.Address();
-                                address.setAddress1(a.getAddress1());
-                                address.setAddress2(a.getAddress2());
-                                address.setAddress3(a.getAddress3());
-                                address.setAddress4(a.getAddress4());
-                                address.setCity(a.getCity());
-                                address.setState(a.getState());
-                                address.setZip(a.getZip());
-                                address.setCountry(a.getCountry());
-                                TrackRequestModel.RequestDetail requestDetail = new TrackRequestModel.RequestDetail();
-                                requestDetail.setAddress(address);
-                                requestDetail.setCompanyName(a.getCompanyName());
-                                requestDetail.setId("1");
-                                requestDetail.setTin(a.getTaxId());
-                                requestDetail.setRequestType("premium");
-                                TrackRequestModel.RequestHeader requestHeader = new TrackRequestModel.RequestHeader();
-                                requestHeader.setBusinessId(businessId);
-                                requestHeader.setOrderId(UUID.randomUUID().toString());
-                                requestHeader.setOrderType("new");
-                                requestHeader.setMatchType("HIGHCONFIDENCE");
-                                b.setRequestDetail(Arrays.asList(requestDetail));
-                                b.setRequestHeader(requestHeader);
+                                buildTrackModel(a, b);
                             }
                         }
                 )
@@ -86,47 +64,171 @@ public class ValidationService {
     }
 
     @Bean
-    public BoundMapperFacade<Discovery, DiscoveryModelFull> discoveryToCSVFull() {
+    public BoundMapperFacade<Registration, TrackRequestModel> registrationToTrackModel() {
         DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
-        mapperFactory.classMap(Discovery.class, DiscoveryModelFull.class)
+        mapperFactory.classMap(Registration.class, TrackRequestModel.class)
                 .customize(
-                        new CustomMapper<Discovery, DiscoveryModelFull>() {
+                        new CustomMapper<Registration, TrackRequestModel>() {
                             @Override
-                            public void mapAtoB(Discovery a, DiscoveryModelFull b, MappingContext context) {
-                                discoveryModelService(a, b);
+                            public void mapAtoB(Registration a, TrackRequestModel b, MappingContext context) {
+                                buildTrackModel(a, b);
                             }
                         }
                 )
                 .byDefault()
                 .register();
-        return mapperFactory.getMapperFacade(Discovery.class, DiscoveryModelFull.class);
+
+        return mapperFactory.getMapperFacade(Registration.class, TrackRequestModel.class);
+    }
+
+    private void buildTrackModel(Record a, TrackRequestModel b) {
+        TrackRequestModel.Address address = new TrackRequestModel.Address();
+        address.setAddress1(a.getAddress1());
+        address.setAddress2(a.getAddress2());
+        address.setAddress3(a.getAddress3());
+        address.setCity(a.getCity());
+        address.setState(a.getState());
+        address.setZip(a.getZip());
+        address.setCountry(a.getCountry());
+        TrackRequestModel.RequestDetail requestDetail = new TrackRequestModel.RequestDetail();
+        requestDetail.setAddress(address);
+        requestDetail.setCompanyName(a.getCompanyName());
+        requestDetail.setId("1");
+        requestDetail.setTin(a.getTaxId());
+        requestDetail.setRequestType("premium");
+        TrackRequestModel.RequestHeader requestHeader = new TrackRequestModel.RequestHeader();
+        requestHeader.setBusinessId(businessId);
+        requestHeader.setOrderId(UUID.randomUUID().toString());
+        requestHeader.setOrderType("new");
+        requestHeader.setMatchType("HIGHCONFIDENCE");
+        b.setRequestDetail(Arrays.asList(requestDetail));
+        b.setRequestHeader(requestHeader);
     }
 
     @Bean
-    public BoundMapperFacade<Discovery, DiscoveryModelPartial> discoveryToCSVPartial() {
+    public BoundMapperFacade<Discovery, DiscoveryModelSupplier> discoveryToCSVFull() {
         DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
-        mapperFactory.classMap(Discovery.class, DiscoveryModelPartial.class)
+        mapperFactory.classMap(Discovery.class, DiscoveryModelSupplier.class)
                 .customize(
-                        new CustomMapper<Discovery, DiscoveryModelPartial>() {
+                        new CustomMapper<Discovery, DiscoveryModelSupplier>() {
                             @Override
-                            public void mapAtoB(Discovery a, DiscoveryModelPartial b, MappingContext context) {
+                            public void mapAtoB(Discovery a, DiscoveryModelSupplier b, MappingContext context) {
                                 discoveryModelService(a, b);
                             }
                         }
                 )
                 .byDefault()
                 .register();
-        return mapperFactory.getMapperFacade(Discovery.class, DiscoveryModelPartial.class);
+        return mapperFactory.getMapperFacade(Discovery.class, DiscoveryModelSupplier.class);
+    }
+
+    @Bean
+    public BoundMapperFacade<Discovery, DiscoveryModelBuyer> discoveryToCSVPartial() {
+        DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+        mapperFactory.classMap(Discovery.class, DiscoveryModelBuyer.class)
+                .customize(
+                        new CustomMapper<Discovery, DiscoveryModelBuyer>() {
+                            @Override
+                            public void mapAtoB(Discovery a, DiscoveryModelBuyer b, MappingContext context) {
+                                discoveryModelService(a, b);
+                            }
+                        }
+                )
+                .byDefault()
+                .register();
+        return mapperFactory.getMapperFacade(Discovery.class, DiscoveryModelBuyer.class);
+    }
+
+    @Bean
+    public BoundMapperFacade<Registration, RegistrationModelSupplier> registrationToCSVFull() {
+        DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+        mapperFactory.classMap(Registration.class, RegistrationModelSupplier.class)
+                .customize(
+                        new CustomMapper<Registration, RegistrationModelSupplier>() {
+                            @Override
+                            public void mapAtoB(Registration a, RegistrationModelSupplier b, MappingContext context) {
+                                registrationModelService(a, b);
+                            }
+                        }
+                )
+                .byDefault()
+                .register();
+        return mapperFactory.getMapperFacade(Registration.class, RegistrationModelSupplier.class);
+    }
+
+
+    @Bean
+    public BoundMapperFacade<Registration, RegistrationModelSupplier> registrationToCSVPartial() {
+        DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+        mapperFactory.classMap(Registration.class, RegistrationModelSupplier.class)
+                .customize(
+                        new CustomMapper<Registration, RegistrationModelSupplier>() {
+                            @Override
+                            public void mapAtoB(Registration a, RegistrationModelSupplier b, MappingContext context) {
+                                registrationModelService(a, b);
+                            }
+                        }
+                )
+                .byDefault()
+                .register();
+        return mapperFactory.getMapperFacade(Registration.class, RegistrationModelSupplier.class);
     }
 
     private void discoveryModelService(Discovery a, Object target) {
-        if (target instanceof DiscoveryModelFull) {
-            DiscoveryModelFull b = (DiscoveryModelFull) target;
-            b.setAddressLine1(a.getAddress1());
-            b.setAddressLine2(a.getAddress2());
-            b.setAddressLine3(a.getAddress3());
-            b.setBpsAvailable(a.getBpsPresent() != null ? a.getBpsPresent().name() : "N");
+        if (target instanceof DiscoveryModelSupplier) {
+            getSupplierModel(a, (DiscoveryModelSupplier) target);
+        } else if (target instanceof DiscoveryModelBuyer) {
+            getBuyerModel(a, (DiscoveryModelBuyer) target);
+        }
+    }
+
+    private void registrationModelService(Registration a, Object target) {
+        if (target instanceof RegistrationModelSupplier) {
+            getSupplierModel(a, (RegistrationModelSupplier) target);
+        } else if (target instanceof RegistrationModelBuyer) {
+            getBuyerModel(a, (RegistrationModelBuyer) target);
+        }
+    }
+
+    private void getBuyerModel(Record a, Model target) {
+        if (a instanceof Discovery) {
+            DiscoveryModelBuyer b = (DiscoveryModelBuyer) target;
+            b.setAddress1(a.getAddress1());
+            b.setAddress2(a.getAddress2());
+            b.setAddress3(a.getAddress3());
+            b.setBpsAvailable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
             b.setConfidence(a.getReason() != null ? a.getReason() : a.getConfidence());
+            b.setCity(a.getCity());
+            b.setCompanyName(a.getCompanyName());
+            b.setDbId(a.getDbId());
+            b.setTaxId(a.getTaxId());
+            b.setState(a.getState());
+            b.setZip(a.getZip());
+            b.setCountry(a.getCountry());
+        } else if (a instanceof Registration) {
+            RegistrationModelBuyer b = (RegistrationModelBuyer) target;
+            b.setAddress1(a.getAddress1());
+            b.setAddress2(a.getAddress2());
+            b.setAddress3(a.getAddress3());
+            b.setCity(a.getCity());
+            b.setCompanyName(a.getCompanyName());
+            b.setDbId(a.getDbId());
+            b.setTaxId(a.getTaxId());
+            b.setState(a.getState());
+            b.setZip(a.getZip());
+            b.setCountry(a.getCountry());
+            b.setStatus(a.getStatus().name());
+            b.setReason(a.getReason());
+            b.setBuyerId(((Registration) a).getBpsId());
+        }
+    }
+
+    private void getSupplierModel(Record a, Model target) {
+        if (a instanceof Discovery) {
+            DiscoveryModelSupplier b = (DiscoveryModelSupplier) target;
+            b.setAddress1(a.getAddress1());
+            b.setAddress2(a.getAddress2());
+            b.setAddress3(a.getAddress3());
             b.setCity(a.getCity());
             b.setCompanyName(a.getCompanyName());
             b.setDbId(a.getDbId());
@@ -136,14 +238,14 @@ public class ValidationService {
             b.setCountry(a.getCountry());
             Stream<String> ids = restTemplateService.getCompaniesFromDirectory(org.apache.commons.lang3.StringUtils.replace(pathToSuppliersByTaxId, "{taxid}", a.getTaxId()), SupplierAgent.class).stream().map(SupplierAgent::getBpsId);
             b.setRestriction(isRuleRestricted(ids) ? "Y" : "N");
-            b.setCardAcceptable(a.getBpsPresent() != null ? a.getBpsPresent().name() : "N");
-        } else if (target instanceof DiscoveryModelPartial) {
-            DiscoveryModelPartial b = (DiscoveryModelPartial) target;
-            b.setAddressLine1(a.getAddress1());
-            b.setAddressLine2(a.getAddress2());
-            b.setAddressLine3(a.getAddress3());
-            b.setBpsAvailable(a.getBpsPresent() != null ? a.getBpsPresent().name() : "N");
-            b.setConfidence(a.getReason() != null ? a.getReason() : a.getConfidence());
+            b.setBpsAvailable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
+            b.setConfidence(((Discovery) a).getReason() != null ? ((Discovery) a).getReason() : a.getConfidence());
+            b.setCardAcceptable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
+        } else if (a instanceof Registration) {
+            RegistrationModelSupplier b = (RegistrationModelSupplier) target;
+            b.setAddress1(a.getAddress1());
+            b.setAddress2(a.getAddress2());
+            b.setAddress3(a.getAddress3());
             b.setCity(a.getCity());
             b.setCompanyName(a.getCompanyName());
             b.setDbId(a.getDbId());
@@ -151,8 +253,10 @@ public class ValidationService {
             b.setState(a.getState());
             b.setZip(a.getZip());
             b.setCountry(a.getCountry());
+            b.setStatus(a.getStatus().name());
+            b.setReason(a.getReason());
+            b.setSupplierId(((Registration) a).getBpsId());
         }
-
     }
 
     private boolean isRuleRestricted(Stream<String> ids) {

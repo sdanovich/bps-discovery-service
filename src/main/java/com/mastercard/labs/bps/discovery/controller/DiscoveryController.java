@@ -6,8 +6,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelFull;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelPartial;
+import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelSupplier;
+import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelBuyer;
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,9 +41,9 @@ public class DiscoveryController {
     @Autowired
     private DiscoveryServiceImpl discoveryService;
     @Autowired
-    private BoundMapperFacade<Discovery, DiscoveryModelFull> discoveryToCSVFull;
+    private BoundMapperFacade<Discovery, DiscoveryModelSupplier> discoveryToCSVFull;
     @Autowired
-    private BoundMapperFacade<Discovery, DiscoveryModelPartial> discoveryToCSVPartial;
+    private BoundMapperFacade<Discovery, DiscoveryModelBuyer> discoveryToCSVPartial;
 
 
     @PostMapping(value = "/discovery/suppliers", produces = {"application/json"})
@@ -68,12 +68,12 @@ public class DiscoveryController {
 
     @GetMapping(value = "/discovery/suppliers/{id}", produces = {"application/json"})
     public ResponseEntity<?> provideSupplierLookup(@PathVariable("id") String id) {
-        return handleFile(id, discoveryToCSVFull, DiscoveryModelFull.class);
+        return handleFile(id, discoveryToCSVFull, DiscoveryModelSupplier.class);
     }
 
     @GetMapping(value = "/discovery/buyers/{id}", produces = {"application/json"})
     public ResponseEntity<?> provideBuyerLookup(@PathVariable("id") String id) {
-        return handleFile(id, discoveryToCSVPartial, DiscoveryModelPartial.class);
+        return handleFile(id, discoveryToCSVPartial, DiscoveryModelBuyer.class);
     }
 
     private URI getUri(String path, BatchFile batchFile) {

@@ -12,27 +12,18 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(schema = "journal")
-public class Discovery extends BpsEntity implements Record {
+public class Registration extends BpsEntity implements Record {
 
-    public enum STATUS {
-        READY,
-        COMPLETE,
-        FAILED
-    }
-
-    public enum EXISTS {
-        Y,
-        N,
-        I
-    }
 
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     private String id;
-    private String batchId;
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private EXISTS bpsPresent;
+    private BatchFile.ENTITY entityType;
+    private String bpsId;
+    private String batchId;
     String companyName;
     String address1;
     String address2;
@@ -46,12 +37,34 @@ public class Discovery extends BpsEntity implements Record {
     String dbId;
     String trackId;
     String confidence;
-    private Integer rating;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private STATUS status;
-    @Enumerated(EnumType.STRING)
-    private EXISTS found;
-    @Column(columnDefinition = "TEXT")
-    private String reason;
+
+    @Override
+    public String getReason() {
+        return null;
+    }
+
+    @Override
+    public void setReason(String reason) {
+
+    }
+
+    @Override
+    public Discovery.STATUS getStatus() {
+        return null;
+    }
+
+    @Override
+    public void setStatus(Discovery.STATUS status) {
+
+    }
+
+    @Override
+    public Discovery.EXISTS getFound() {
+        return null;
+    }
+
+    @Override
+    public void setFound(Discovery.EXISTS exists) {
+
+    }
 }

@@ -11,13 +11,8 @@ import java.io.Serializable;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class Address implements Serializable {
-    private String address1;
-    private String address2;
-    private String address3;
-    private String city;
-    private String state;
-    private String zip;
-    private String country;
+public class BusinessEntity implements Serializable {
+    private String name;
+    private String id;
+    private Address address;
 }

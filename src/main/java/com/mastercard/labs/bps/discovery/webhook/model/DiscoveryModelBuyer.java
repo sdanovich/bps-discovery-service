@@ -11,19 +11,19 @@ import java.io.Serializable;
 
 @JsonPropertyOrder(value = {DiscoveryConst.COMPANY_NAME, DiscoveryConst.ADDRESS_LINE_1, DiscoveryConst.ADDRESS_LINE_2, DiscoveryConst.ADDRESS_LINE_3,
         DiscoveryConst.CITY, DiscoveryConst.STATE_PROVINCE, DiscoveryConst.COUNTRY, DiscoveryConst.ZIP, DiscoveryConst.TAX_ID, DiscoveryConst.DB_ID,
-        DiscoveryConst.BPS_AVAILABLE, DiscoveryConst.CARD_ACCEPTANCE, DiscoveryConst.RESTRICTIONS, DiscoveryConst.CONFIDENCE})
+        DiscoveryConst.BPS_AVAILABLE, DiscoveryConst.CONFIDENCE})
 @Getter
 @Setter
 @NoArgsConstructor
-public class DiscoveryModelFull implements Serializable {
+public class DiscoveryModelBuyer implements Serializable, Model {
     @JsonProperty(value = DiscoveryConst.COMPANY_NAME)
     private String companyName;
     @JsonProperty(value = DiscoveryConst.ADDRESS_LINE_1)
-    private String addressLine1;
+    private String address1;
     @JsonProperty(value = DiscoveryConst.ADDRESS_LINE_2)
-    private String addressLine2;
+    private String address2;
     @JsonProperty(value = DiscoveryConst.ADDRESS_LINE_3)
-    private String addressLine3;
+    private String address3;
     @JsonProperty(value = DiscoveryConst.CITY)
     private String city;
     @JsonProperty(value = DiscoveryConst.STATE_PROVINCE)
@@ -38,10 +38,6 @@ public class DiscoveryModelFull implements Serializable {
     private String dbId;
     @JsonProperty(value = DiscoveryConst.BPS_AVAILABLE)
     private String bpsAvailable;
-    @JsonProperty(value = DiscoveryConst.CARD_ACCEPTANCE)
-    private String cardAcceptable;
-    @JsonProperty(value = DiscoveryConst.RESTRICTIONS)
-    private String restriction;
     @JsonProperty(value = DiscoveryConst.CONFIDENCE)
     private String confidence;
 }

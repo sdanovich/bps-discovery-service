@@ -3,6 +3,8 @@ package com.mastercard.labs.bps.discovery.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
+import com.mastercard.labs.bps.discovery.domain.journal.Record;
+import com.mastercard.labs.bps.discovery.domain.journal.Registration;
 import com.mastercard.labs.bps.discovery.exceptions.ResourceNotFoundException;
 import com.mastercard.labs.bps.discovery.exceptions.TrackAuthenticationException;
 import com.mastercard.labs.bps.discovery.persistence.support.RequestResponseLoggingInterceptor;
@@ -41,6 +43,9 @@ public class RestTemplateServiceImpl {
 
     @Autowired
     private BoundMapperFacade<Discovery, TrackRequestModel> discoveryToTrackModel;
+
+    @Autowired
+    private BoundMapperFacade<Registration, TrackRequestModel> registrationToTrackModel;
 
     @Autowired
     private ObjectMapper jacksonObjectMapper;
@@ -84,13 +89,13 @@ public class RestTemplateServiceImpl {
     }
 
 
-    public FutureTask<ResponseEntity<TrackResponseModel>> callTrack(Discovery discovery) throws ExecutionException, InterruptedException {
+    public FutureTask<ResponseEntity<TrackResponseModel>> callTrack(Record record) throws ExecutionException, InterruptedException {
         HttpHeaders headers = getHeaders();
         try {
             headers.add("authorization", trackAuthBearer());
             FutureTask<ResponseEntity<TrackResponseModel>> task = new FutureTask<>(() -> {
                 try {
-                    return getRestTemplate(urlToTrack).exchange(urlToTrack, HttpMethod.POST, new HttpEntity<>(discoveryToTrackModel.map(discovery), headers), TrackResponseModel.class);
+                    return getRestTemplate(urlToTrack).exchange(urlToTrack, HttpMethod.POST, new HttpEntity<>(record instanceof Discovery ? discoveryToTrackModel.map((Discovery) record) : registrationToTrackModel.map((Registration) record), headers), TrackResponseModel.class);
                 } catch (final HttpClientErrorException e) {
                     log.error("Status Code: " + e.getStatusCode());
                     log.error("Response: " + e.getResponseBodyAsString());
@@ -140,7 +145,7 @@ public class RestTemplateServiceImpl {
 
 
     private String trackAuthBearer() {
-        if (LocalDateTime.now().until(tokenExpiration.get().getFirst(), ChronoUnit.SECONDS) < 10) {
+        if (tokenExpiration.get().getFirst().until(LocalDateTime.now(), ChronoUnit.SECONDS) > 10) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             try {
@@ -153,11 +158,11 @@ public class RestTemplateServiceImpl {
                 HttpEntity<String> entity = new HttpEntity<>(body, headers);
                 ResponseEntity<?> response = getRestTemplate(trackAuthUrl).exchange(trackAuthUrl, HttpMethod.POST, entity, Object.class);
                 if (response.getStatusCode().is2xxSuccessful()) {
-                    int expirationSeconds = Integer.parseInt(((Map<String, String>) response.getBody()).get("ext_expires_in"));
+                    int expirationSeconds = ((Map<String, Integer>) response.getBody()).get("ext_expires_in");
                     tokenExpiration.set(Pair.of(LocalDateTime.now().plusSeconds(expirationSeconds), ((Map<String, String>) response.getBody()).get("access_token")));
+                } else {
+                    throw new TrackAuthenticationException("error obtaining track oauth2 token");
                 }
-
-                throw new TrackAuthenticationException("error obtaining track oauth2 token");
             } catch (Exception e) {
                 throw new TrackAuthenticationException(e.getMessage());
             }
