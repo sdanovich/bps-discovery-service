@@ -1,6 +1,6 @@
 ---
 applications:
-- name: bps-directory-ui
+- name: bps-discovery-ui
   memory: 756M
   env:
     CONTEXT_PATH: /bps/directory/v0.1/
