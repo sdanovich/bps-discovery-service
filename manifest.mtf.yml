@@ -28,7 +28,7 @@ applications:
     LOGGING_MASTERCARD: INFO
     JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=mtf
     VAULT_ENABLED: true
-    VAULT_TOKEN: s.MxUVB0kuLbPuvt6ywClLKNrs
+    VAULT_TOKEN: s.tqSX2boWshEpFmQV8mo8PKXR
     VAULT_ADDR: https://vaultidc.mastercard.int
     VAULT_TRUSTSTORE: vaultidc.mastercard.int.jks
     VAULT_PASSWORD: changeit
