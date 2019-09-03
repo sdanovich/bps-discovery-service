@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static com.mastercard.labs.bps.discovery.domain.journal.BatchFile.STATUS.*;
 
@@ -108,7 +109,7 @@ public class BatchFileProcessor {
                     discovery.setCompanyName(map.get(DiscoveryConst.COMPANY_NAME));
                     try {
                         discovery = discoveryRepository.save(discovery);
-                        if(batchFile.getType() == BatchFile.TYPE.REGISTRATION && !discoveryService.isDiscoveryValid(discovery)) {
+                        if (batchFile.getType() == BatchFile.TYPE.REGISTRATION && !discoveryService.isDiscoveryValid(discovery, batchFile.getEntityType())) {
                             discovery.setReason("Registration Error - Missing required fields");
                             throw new ValidationException(discovery.getReason());
                         }
@@ -135,6 +136,11 @@ public class BatchFileProcessor {
                                             } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
                                                 discovery.setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToSupplier, "{trackid}", responseDetails.get(0).getRequestData().getTrackId()), SupplierAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                             }
+                                            //the record has been located in track and registration is required
+                                            if(batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
+                                                CompletableFuture.runAsync(() -> register());
+                                            }
+
                                         }
                                     } else {
                                         discovery.setFound(Discovery.EXISTS.N);
@@ -166,5 +172,11 @@ public class BatchFileProcessor {
                 log.error(e.getMessage(), e.getLocalizedMessage(), e);
             }
         }
+    }
+
+
+    private void register() {
+
+
     }
 }

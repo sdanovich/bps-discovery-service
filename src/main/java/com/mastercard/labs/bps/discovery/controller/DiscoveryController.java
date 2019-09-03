@@ -56,6 +56,16 @@ public class DiscoveryController {
         return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.LOOKUP, BatchFile.ENTITY.BUYER), "buyers");
     }
 
+    @PostMapping(value = "/discovery/suppliers", produces = {"application/json"})
+    public ResponseEntity<Link> handleSupplierLookupWithAgent(@RequestParam("file") MultipartFile file,  @RequestHeader(value = "agentName") String agentName) throws IOException {
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.SUPPLIER, agentName), "suppliers");
+    }
+
+    @PostMapping(value = "/discovery/buyers", produces = {"application/json"})
+    public ResponseEntity<Link> handleBuyersLookupWithAgent(@RequestParam("file") MultipartFile file,  @RequestHeader(value = "agentName") String agentName)  throws IOException {
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.BUYER, agentName), "buyers");
+    }
+
     @GetMapping(value = "/discovery/suppliers/{id}", produces = {"application/json"})
     public ResponseEntity<?> provideSupplierLookup(@PathVariable("id") String id) {
         return handleFile(id, discoveryToCSVFull, DiscoveryModelFull.class);

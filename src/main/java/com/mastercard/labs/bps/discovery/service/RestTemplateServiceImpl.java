@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.util.Pair;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.DefaultResponseErrorHandler;
@@ -22,9 +23,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,6 +76,8 @@ public class RestTemplateServiceImpl {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    private volatile AtomicReference<org.springframework.data.util.Pair<LocalDateTime, String>> tokenExpiration = new AtomicReference<>(org.springframework.data.util.Pair.of(LocalDateTime.MIN, ""));
 
     public RestTemplate getRestTemplate(String url) {
         return (StringUtils.startsWithIgnoreCase(url, "https")) ? externalSSLRestTemplate : restTemplate;
@@ -134,26 +140,29 @@ public class RestTemplateServiceImpl {
 
 
     private String trackAuthBearer() {
+        if (LocalDateTime.now().until(tokenExpiration.get().getFirst(), ChronoUnit.SECONDS) < 10) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            try {
+                String body = Stream.of("grant_type=" + URLEncoder.encode(trackAuthGrantType, "UTF-8"),
+                        "client_assertion_type=" + URLEncoder.encode(trackAutAssertionType, "UTF-8"),
+                        "client_assertion=" + URLEncoder.encode(trackAuthAssertion, "UTF-8"),
+                        "client_id=" + URLEncoder.encode(trackAuthClientId, "UTF-8"),
+                        "scope=" + URLEncoder.encode(trackAuthScope, "UTF-8")).collect(Collectors.joining("&"));
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        try {
-            String body = Stream.of("grant_type=" + URLEncoder.encode(trackAuthGrantType, "UTF-8"),
-                    "client_assertion_type=" + URLEncoder.encode(trackAutAssertionType, "UTF-8"),
-                    "client_assertion=" + URLEncoder.encode(trackAuthAssertion, "UTF-8"),
-                    "client_id=" + URLEncoder.encode(trackAuthClientId, "UTF-8"),
-                    "scope=" + URLEncoder.encode(trackAuthScope, "UTF-8")).collect(Collectors.joining("&"));
+                HttpEntity<String> entity = new HttpEntity<>(body, headers);
+                ResponseEntity<?> response = getRestTemplate(trackAuthUrl).exchange(trackAuthUrl, HttpMethod.POST, entity, Object.class);
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    int expirationSeconds = Integer.parseInt(((Map<String, String>) response.getBody()).get("ext_expires_in"));
+                    tokenExpiration.set(Pair.of(LocalDateTime.now().plusSeconds(expirationSeconds), ((Map<String, String>) response.getBody()).get("access_token")));
+                }
 
-            HttpEntity<String> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<?> response = getRestTemplate(trackAuthUrl).exchange(trackAuthUrl, HttpMethod.POST, entity, Object.class);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                return "Bearer " + ((Map<String, String>) response.getBody()).get("access_token");
+                throw new TrackAuthenticationException("error obtaining track oauth2 token");
+            } catch (Exception e) {
+                throw new TrackAuthenticationException(e.getMessage());
             }
-            throw new TrackAuthenticationException("error obtaining track oauth2 token");
-        } catch (Exception e) {
-            throw new TrackAuthenticationException(e.getMessage());
         }
-
+        return "Bearer " + tokenExpiration.get().getSecond();
     }
 
     private HttpHeaders getHeaders() {

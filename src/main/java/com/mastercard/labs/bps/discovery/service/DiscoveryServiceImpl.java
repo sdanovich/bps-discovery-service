@@ -46,10 +46,15 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 
     @Override
     public BatchFile store(@NotNull MultipartFile file, BatchFile.TYPE type, BatchFile.ENTITY entityType) throws IOException {
-        return getBatchFile(file, type, entityType);
+        return store(file, type, entityType, null);
     }
 
-    private BatchFile getBatchFile(@NotNull MultipartFile file, BatchFile.TYPE type, BatchFile.ENTITY entityType) throws IOException {
+    public BatchFile store(MultipartFile file, BatchFile.TYPE type, BatchFile.ENTITY entityType, String agentName) throws IOException {
+        return getBatchFile(file, type, entityType, agentName);
+    }
+
+
+    private BatchFile getBatchFile(@NotNull MultipartFile file, BatchFile.TYPE type, BatchFile.ENTITY entityType, String agentName) throws IOException {
         if (FilenameUtils.getExtension(file.getOriginalFilename()).equalsIgnoreCase("csv")) {
             BatchFile batchFile = new BatchFile();
             batchFile.setFileName(getFileName(file.getOriginalFilename()));
@@ -57,6 +62,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             batchFile.setEntityType(entityType);
             batchFile.setType(type);
             batchFile.setStatus(BatchFile.STATUS.RECEIVED);
+            batchFile.setAgentName(agentName);
             return batchFileRepository.save(batchFile);
         } else
             return null;
@@ -67,7 +73,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         COUNTRY(DiscoveryConst.COUNTRY, "^[a-zA-Z]{2}|[a-zA-Z]{3}$"),
         STATE(DiscoveryConst.STATE_PROVINCE, "^[a-zA-Z]{2}$"),
         ADDRESS_1(DiscoveryConst.ADDRESS_LINE_1, "([0-9a-zA-Z _\\-\\.,]+)"),
-        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "^(\\S)+.buy@bps$"),
+        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "^(\\S)+.(\\S)+@bps$"),
         CITY(DiscoveryConst.CITY, "([a-zA-Z -\\.]+)");
 
         private String value;
