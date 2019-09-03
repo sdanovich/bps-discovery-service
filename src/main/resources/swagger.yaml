@@ -1,0 +1,592 @@
+swagger: '2.0'
+info:
+  description:  "API to lookup partners in the B2B Payment Service Network by Mastercard"
+  version: 0.1.0
+  x-artifactId: bps-discovery-service
+  title: B2B Directory Service API
+  contact:
+    name: BPS
+    email: bps@mastercard.com
+tags:
+  - name: Directory
+paths:
+  '/suppliers/{id}':
+    get:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: Get details of a supplier
+      operationId: supplierGet
+      parameters:
+        - name: id
+          in: path
+          description: BPS Supplier ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Supplier found
+          schema:
+            $ref: '#/definitions/SupplierAgent'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/company/{taxid}/suppliers':
+    get:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: Get suppliersBy Tax Id
+      operationId: suppliersGetByTaxId
+      parameters:
+        - name: taxId
+          in: path
+          description: BPS Company Tax Id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Suppliers found
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SupplierAgent'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/buyers/{id}':
+    get:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: Get details of a buyer
+      operationId: buyerGet
+      parameters:
+        - name: id
+          in: path
+          description: BPS Buyer Id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Buyer found
+          schema:
+            $ref: '#/definitions/BuyerAgent'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      deprecated: false
+
+  '/search/suppliers':
+    post:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: search suppliers by provided search criteria using POST method
+      operationId: findSuppliersPost
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: searchRequest
+          description: List of Supplier IDs
+          schema:
+            $ref: '#/definitions/SearchRequest'
+      responses:
+        '201':
+          description: Search Request
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      deprecated: false
+
+    get:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: search suppliers by provided search criteria using GET method
+      operationId: findSuppliersGet
+      consumes:
+        - application/json
+      parameters:
+        - name : criteria
+          in: query
+          required: true
+          type: string
+          description: search criteria
+        - name : page
+          in: query
+          required: false
+          default: 0
+          type: integer
+          description: page number
+        - name : size
+          in: query
+          required: false
+          default: 20
+          type: integer
+          description: size of page
+        - name : sort
+          in: query
+          required: false
+          type: string
+          description: sort criteria
+      responses:
+        '201':
+          description: Search Request
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      deprecated: false
+
+  '/search/buyers':
+    post:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: search buyers by provided search criteria using POST method
+      operationId: findBuyersPost
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: searchRequest
+          description: search criteria
+          schema:
+            $ref: '#/definitions/SearchRequest'
+      responses:
+        '201':
+          description: Search Response
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      deprecated: false
+
+    get:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: search buyers by provided search criteria using GET method
+      operationId: findBuyersGet
+      consumes:
+        - application/json
+      parameters:
+        - name : criteria
+          in: query
+          required: true
+          type: string
+          description: search criteria
+        - name : page
+          in: query
+          required: false
+          default: 0
+          type: integer
+          description: page number
+        - name : size
+          in: query
+          required: false
+          default: 20
+          type: integer
+          description: size of page
+        - name : sort
+          in: query
+          required: false
+          type: string
+          description: sort criteria
+      responses:
+        '201':
+          description: Search Response
+          schema:
+            $ref: '#/definitions/SearchResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      deprecated: false
+
+  '/banks/{bankRoutingNumber}':
+    get:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: Get details of a bank
+      operationId: bankGet
+      parameters:
+        - name: bankRoutingNumber
+          in: path
+          description: Bank Routing Number
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Bank found
+          schema:
+            $ref: '#/definitions/Bank'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/activate':
+    post:
+      produces:
+        - application/json
+      tags:
+        - Directory
+      summary: activate BPS partners using POST method
+      operationId: activateClientIdPost
+      consumes:
+        - application/json
+      parameters:
+        - in: header
+          name: clinet_id
+          type: string
+        - in: body
+          name: activationRequest
+          description: activation request
+          schema:
+            $ref: '#/definitions/ActivationRequest'
+      responses:
+        '201':
+          description: Activation Response
+          schema:
+            $ref: '#/definitions/ActivationResponse'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+      deprecated: false
+
+definitions:
+  SearchId:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 'taxId'
+      country:
+        type: string
+        description: 'USA'
+
+  Address:
+    type: object
+    properties:
+      street:
+        type: string
+        description: '317 Madison Ave. Ste 900'
+      city:
+        type: string
+        description: 'New York'
+      state:
+        type: string
+        description: 'NY'
+      zip:
+        type: string
+        description: '01198-0198'
+      country:
+        type: string
+        description: 'USA'
+
+
+  SearchRequest:
+    type: object
+    properties:
+      name:
+        type: array
+        items:
+          type: string
+      taxIds:
+        type: array
+        items:
+          $ref: '#/definitions/SearchId'
+      address:
+        $ref: '#/definitions/Address'
+      searchPage:
+        $ref: '#/definitions/SearchPage'
+
+  SearchResponse:
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/BusinessEntity'
+      totalPages:
+        type: integer
+        description: Total number of pages matching search criteria
+        example: 5
+      totalElements:
+        type: integer
+        description: Total number of rows matching search criteria
+        example: 100
+
+  BusinessEntity:
+    type: object
+    properties:
+      name:
+        type: string
+        example: Business entity name
+      id:
+        type: string
+        example: Business entity id
+      address:
+        $ref: '#/definitions/Address'
+    title: BusinessEntity
+
+  Supplier:
+    type: object
+    properties:
+      bpsId:
+        type: string
+        example: beewax.pay.bps
+      name:
+        type: string
+        example: BeeWax Factory
+    title: Supplier
+  Buyer:
+    type: object
+    properties:
+      bpsId:
+        type: string
+        example: fancy.nam.buy.bps
+      name:
+        type: string
+        example: Fancy Shoes, Inc
+    title: Buyer
+
+  SearchPage:
+    type: object
+    properties:
+      page:
+        type: integer
+        description: Page number
+        example: 0
+      size:
+        type: integer
+        description: Page size
+        example: Fancy Shoes, Inc
+      sort:
+        type: array
+        items:
+          $ref: '#/definitions/SearchPageSort'
+
+      dir:
+        type: string
+        description: Page sorting direction (ascending or descending)
+        example: asc
+    title: SearchPage
+
+  SearchPageSort:
+    type: object
+    properties:
+      name:
+        type: string
+      direction:
+        type: string
+        enum: [ASC, DESC]
+
+  SupplierAgent:
+    description: Supplier Agent  Details
+    allOf:
+      - $ref: '#/definitions/Supplier'
+      - type: object
+        properties:
+          address:
+            $ref: '#/definitions/Address'
+          agentname:
+            type: string
+            example: SupplierAgentName
+          hooks:
+            type: array
+            items:
+              $ref: '#/definitions/Hook'
+    title: SupplierAgent
+
+  BuyerAgent:
+    description: Buyer Agent  Details
+    allOf:
+      - $ref: '#/definitions/Buyer'
+      - type: object
+        properties:
+          address:
+            $ref: '#/definitions/Address'
+          agentname:
+            type: string
+            example: BuyerAgentName
+          hooks:
+            type: array
+            items:
+              $ref: '#/definitions/Hook'
+    title: BuyerAgent
+
+  Bank:
+    description: Bank Details
+    type: object
+    properties:
+      bankRoutingNumber:
+        type: string
+        example: 063100244
+      name:
+        type: string
+        example: BeeWax Factory
+      taxId:
+        type: string
+        example: TAX-4532
+      address:
+        $ref: '#/definitions/Address'
+      hooks:
+        type: array
+        items:
+          $ref: '#/definitions/Hook'
+    title: Bank
+
+  Hook:
+    type: object
+    properties:
+      value:
+        type: string
+        example: http://localhost:9988/bps-adapter-pnc/api/v0.1/pnc-webhook/push-rfp
+      type:
+        type: string
+        enum: [RFP_PUSH_WEBHOOK, CARD_PUSH_WEBHOOK,PAYMENT_NOTIFICATION_WEBHOOK,SFTP]
+        example: RFP_PUSH_WEBHOOK
+    title: Hook
+
+  ActivationRequest:
+    description: Bank Details
+    type: object
+    properties:
+      registrationId:
+        type: string
+
+  ActivationResponse:
+    type: object
+    properties:
+      activationStatusMessage:
+        type: string
+
+  Error:
+    type: "object"
+    required:
+      - "errors"
+    properties:
+      errors:
+        required:
+          - "error"
+        properties:
+          error:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                source:
+                  type: "string"
+                reasonCode:
+                  type: "string"
+                description:
+                  type: "string"
+                recoverable:
+                  type: "boolean"
+                details:
+                  type: "array"
+                  items:
+                    type: "object"
+                    properties:
+                      name:
+                        type: "string"
+                      value:
+                        type: "string"

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">%highlight{%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} | %C | %p %m%n |}{FATAL=red blink,
+            ERROR=red, WARN=yellow bold, INFO=black, DEBUG=green bold, TRACE=blue}
+        </Property>
+        <Property name="APP_LOG_ROOT">${env:APP_LOG_ROOT:-logs}</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <RegexFilter regex=".*Writing.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+        </Console>
+
+        <RollingFile name="appLog"
+                     fileName="${APP_LOG_ROOT}/bps-directory/bps-directory.log"
+                     filePattern="${APP_LOG_ROOT}/bps-directory/bps-directory-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <RegexFilter regex=".*Writing.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+        <Rewrite name="secure">
+            <LogInterceptor/>
+            <AppenderRef ref="appLog"/>
+        </Rewrite>
+
+    </Appenders>
+
+    <Loggers>
+        <Root level="all">
+            <AppenderRef ref="Console" level="trace"/>
+            <AppenderRef ref="secure" level="debug"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+
+  api:
+    image: ${DOCKER_REGISTRY_PREFIX-art4lab0.labs.mastercard.com:5001/}com.mastercard.labs.bps/rest-service/stage:latest
+    ports:
+      - "9987:9987"
+    depends_on:
+      - postgres
+    environment:
+      - VAULT_ENABLED=true
+      - VAULT_TOKEN=s.b7XAtDzxvBxnWGJweeolHS2A
+      - VAULT_ADDR=https://dev.labs.mastercard.com
+      - APP_LOG_ROOT=/var/backup/docker/logs/bps-discovery
+      - SPRING_PROFILES_ACTIVE=stage
+    volumes:
+      - /var/backup/docker/logs:/var/backup/docker/logs/bps-discovery

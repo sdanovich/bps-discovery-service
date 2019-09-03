@@ -1,0 +1,50 @@
+---
+applications:
+- name: bps-discovery-ui
+  memory: 756M
+  env:
+    CONTEXT_PATH: /bps/discovery/v0.1/
+    SPRING_PROFILES_ACTIVE: mtf
+    ENV: mtf
+    APP_NAME: bps-api-sbx
+    APP_PORT: 8080
+    PROXY_REQUIRED: true
+    PROXT_HOST: labsidcproxy.mastercard.int
+    PROXT_PORT: 16521
+    DATASOURCE_JOURNAL: "jdbc:postgresql://labspgpilot1.mastercard.int:6432/bpsrestservice_sbx?currentSchema=journal&ApplicationName=bps-journel-mtf"
+    TRACK_POST_URL_DISCOVERY: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
+    TRACK_POST_AUTH_DISCOVERY: https://login.microsoftonline.com/37af61b9-427a-446d-9060-91e85a4913dc/oauth2/v2.0/token
+    BPS_DISCOVERY_LANDING: https://bps-discovery.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/discovery/v0.1
+    BPS_DIRECTORY_LANDING: https://bps-directory.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/directory/v0.1
+    BPS_RFP_PAYMENT: https://bps-adapter-pnc.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/adapter/pnc/v0.1/rfpPayment
+    BPS_USBANK_PAYMENT: https://bps-service.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/adapter/usbank/v0.1/payment-notification
+    BPS_VERSAPAY_PAYMENT: https://demo.versapay.com/mastercard/bps/payment
+    BPS_BOOST_PAYMENT: http://tbd:9970/api/v1/payment-request/
+    BPS_RULES_LANDING: https://bps-rules.mtf.apps.dal.idc-prod-pas.mastercard.int/bps/rules/v0.1
+    LOGGING_SECURITY: INFO
+    LOGGING_WEB: INFO
+    LOGGING_0: INFO
+    LOGGING_SLF4J: debug
+    LOGGING_MASTERCARD: INFO
+    JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=mtf
+    VAULT_ENABLED: true
+    VAULT_TOKEN: s.tqSX2boWshEpFmQV8mo8PKXR
+    VAULT_ADDR: https://vaultidc.mastercard.int
+    VAULT_TRUSTSTORE: vaultidc.mastercard.int.jks
+    VAULT_PASSWORD: changeit
+    KEYSTORE_CAAS: caas_v1_pilot_keystore.jks
+    KEYSTOREPASS: YgjiIGxx
+    TRUSTSTORE: caas_v1_pilot_truststore.jks
+    TRUSTSTOREPASS: changeit
+    CAAS_CRYPTO_ENABLED: true
+    CAASV1_ENDPOINT: https://stage.caasidc.mastercard.int:25027/CaaS/services/CryptoService
+    CAASV1_HASH_SALT: 56335c0258f7e707
+    TRACK_BUSINESS_ID: US2017000000000
+    TRACK_AUTH_CLIENT_ASSERTION_TYPE: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+    TRACK_AUTH_CLIENT_ASSERTION: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsIng1dCI6IjJlMExVWi9sK01lN2VITXFyc0VNNkRpNHIxST0ifQ.eyJhdWQiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vMzdhZjYxYjktNDI3YS00NDZkLTkwNjAtOTFlODVhNDkxM2RjL29hdXRoMi90b2tlbiIsImV4cCI6MTU4MzAyMDc5OSwiaXNzIjoiODRjNWVkOWQtMjNlNi00YWI1LWJlZGItMTViYjdhNzRhNzFkIiwibmJmIjoxNTQ4OTc5MjAwLCJzdWIiOiI4NGM1ZWQ5ZC0yM2U2LTRhYjUtYmVkYi0xNWJiN2E3NGE3MWQifQ.Eo_zNTFXfiaL0E6WilqREAQj5Xq7Q3ECdrcsoUltapnKRXsHgIEyHW4agkHOzqM6T1PiycZaKLn2AVibMUJ0ZhGgkxsUDfatR3kPa7vgAxLbHtRFwv9JSjjWlzc8axcVVkiS4puuYxkdGs5mapmBMa97q67sPLd15Rz5DqrMJBZEJzVZaKGxwuEyaaIdVF2CxzDaTqRS8rQ0vvSUzPSoNY3_UQRclMLFNV5lxWXBYd_jbVnToeCIHMqOY8KCjd0LuUE1EPvtTMz_15PneMzDaLDxo7Roox05a6NMdQ90tEF4UzF9kxAZOsMugBYjm6ygqefAgjSvElU3QNeMvloBXw
+    TRACK_AUTH_CLIENT_ID: 84c5ed9d-23e6-4ab5-bedb-15bb7a74a71d
+    TRACK_AUTH_SCOPE: https://mcb2bitf.onmicrosoft.com/9b7ab480-6f41-4f8f-9d1a-427089d752bf/.default
+
+  buildpacks:
+  - java_buildpack_offline
+  timeout: 600

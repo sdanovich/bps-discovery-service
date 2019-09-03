@@ -1,0 +1,1 @@
+CREATE SCHEMA IF NOT EXISTS journal AUTHORIZATION bpsservice_sbx_user;

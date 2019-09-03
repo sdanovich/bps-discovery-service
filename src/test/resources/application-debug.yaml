@@ -1,0 +1,60 @@
+spring:
+  profiles:
+    include: caas
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    show-sql: true
+    properties:
+      javax:
+        persistence:
+          validation:
+            mode: none
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+server:
+  servlet:
+    context-path: /bps/discovery/v0.1/
+  port: 9979
+
+track:
+  auth:
+    url: https://login.microsoftonline.com/37af61b9-427a-446d-9060-91e85a4913dc/oauth2/v2.0/token
+    grantType: client_credentials
+    client:
+      assertionType: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+      assertion: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsIng1dCI6IjJlMExVWi9sK01lN2VITXFyc0VNNkRpNHIxST0ifQ.eyJhdWQiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vMzdhZjYxYjktNDI3YS00NDZkLTkwNjAtOTFlODVhNDkxM2RjL29hdXRoMi90b2tlbiIsImV4cCI6MTU4MzAyMDc5OSwiaXNzIjoiODRjNWVkOWQtMjNlNi00YWI1LWJlZGItMTViYjdhNzRhNzFkIiwibmJmIjoxNTQ4OTc5MjAwLCJzdWIiOiI4NGM1ZWQ5ZC0yM2U2LTRhYjUtYmVkYi0xNWJiN2E3NGE3MWQifQ.Eo_zNTFXfiaL0E6WilqREAQj5Xq7Q3ECdrcsoUltapnKRXsHgIEyHW4agkHOzqM6T1PiycZaKLn2AVibMUJ0ZhGgkxsUDfatR3kPa7vgAxLbHtRFwv9JSjjWlzc8axcVVkiS4puuYxkdGs5mapmBMa97q67sPLd15Rz5DqrMJBZEJzVZaKGxwuEyaaIdVF2CxzDaTqRS8rQ0vvSUzPSoNY3_UQRclMLFNV5lxWXBYd_jbVnToeCIHMqOY8KCjd0LuUE1EPvtTMz_15PneMzDaLDxo7Roox05a6NMdQ90tEF4UzF9kxAZOsMugBYjm6ygqefAgjSvElU3QNeMvloBXw
+      id: 84c5ed9d-23e6-4ab5-bedb-15bb7a74a71d
+    scope: https://mcb2bitf.onmicrosoft.com/9b7ab480-6f41-4f8f-9d1a-427089d752bf/.default
+  post:
+    singleVendorDetail: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
+
+webhook:
+  secretKey: v7aJHjbbxASKiwDW5wq6
+
+discovery:
+  delimiter: "|"
+  businessId: "US2017000000000"
+  csv:
+    lookup-columns: "Company Name|Address Line 1|Address Line 2|Address Line 3|Address Line 4|City|State/Province|Country|Zip|Tax ID|D&B #|BPS Available|Card Acceptance|Restrictions|Confidence"
+    registration-columns: "Company Name|Address Line 1|Address Line 2|Address Line 3|City|State/Province|Country|Zip|Tax ID|D&B #|Buyer ID|Status|Reason"
+
+journal:
+  datasource:
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    username: bpsservice
+    password: bps!2345
+    driver-class-name: org.h2.Driver
+
+swagger:
+  url:
+    rules: http://localhost:9985/bps/rules/v0.1
+    directory: http://localhost:9987/bps/directory/v0.1
+    landing: http://localhost:9988/bps-discovery/api/v0.1/swagger.html
+    tokenAccess: http://localhost:9981/bps-auth/realms/test/protocol/openid-connect/token
+url:
+  validator: ${swagger.url.rules}/validations
+  authorization: ${swagger.url.rules}/pre-validations
+
