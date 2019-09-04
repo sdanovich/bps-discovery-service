@@ -3,8 +3,10 @@ package com.mastercard.labs.bps.discovery.service;
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
+import com.mastercard.labs.bps.discovery.domain.journal.Registration;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
+import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private BatchFileRepository batchFileRepository;
     @Autowired
     private DiscoveryRepository discoveryRepository;
+    @Autowired
+    private RegistrationRepository registrationRepository;
     @Autowired
     private PooledPBEByteEncryptor byteEncryptor;
     @Value("${discovery.delimiter}")
@@ -124,5 +128,9 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 
     public List<Discovery> getDiscoveries(String batchId) {
         return discoveryRepository.findByBatchId(batchId);
+    }
+
+    public List<Registration> getRegistrations(String batchId) {
+        return registrationRepository.findByBatchId(batchId);
     }
 }

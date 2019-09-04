@@ -145,7 +145,7 @@ public class BatchFileProcessor {
         registration.setAddress1(map.get(DiscoveryConst.ADDRESS_LINE_1));
         registration.setCompanyName(map.get(DiscoveryConst.COMPANY_NAME));
         registration.setBpsId(map.get(batchFile.getEntityType() == BatchFile.ENTITY.BUYER ? DiscoveryConst.BUYER_ID : DiscoveryConst.SUPPLIER_ID));
-        registration.setEntity(batchFile.getEntityType());
+        registration.setEntityType(batchFile.getEntityType());
         return registration;
     }
 
@@ -209,7 +209,7 @@ public class BatchFileProcessor {
 
 
     private void register(BatchFile batchFile, Registration registration) throws ExecutionException {
-        if (!StringUtils.isBlank(batchFile.getAgentName())) {
+        if (!StringUtils.isBlank(batchFile.getAgentName()) || StringUtils.equalsAnyIgnoreCase(registration.getConfidence(), "HIGHCONFIDENCE")) {
             BusinessEntity businessEntity = new BusinessEntity();
             Address address = new Address();
             address.setAddress1(registration.getAddress1());

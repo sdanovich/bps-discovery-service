@@ -158,20 +158,20 @@ public class ValidationService {
 
 
     @Bean
-    public BoundMapperFacade<Registration, RegistrationModelSupplier> registrationToCSVPartial() {
+    public BoundMapperFacade<Registration, RegistrationModelBuyer> registrationToCSVPartial() {
         DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
-        mapperFactory.classMap(Registration.class, RegistrationModelSupplier.class)
+        mapperFactory.classMap(Registration.class, RegistrationModelBuyer.class)
                 .customize(
-                        new CustomMapper<Registration, RegistrationModelSupplier>() {
+                        new CustomMapper<Registration, RegistrationModelBuyer>() {
                             @Override
-                            public void mapAtoB(Registration a, RegistrationModelSupplier b, MappingContext context) {
+                            public void mapAtoB(Registration a, RegistrationModelBuyer b, MappingContext context) {
                                 registrationModelService(a, b);
                             }
                         }
                 )
                 .byDefault()
                 .register();
-        return mapperFactory.getMapperFacade(Registration.class, RegistrationModelSupplier.class);
+        return mapperFactory.getMapperFacade(Registration.class, RegistrationModelBuyer.class);
     }
 
     private void discoveryModelService(Discovery a, Object target) {
@@ -239,7 +239,7 @@ public class ValidationService {
             Stream<String> ids = restTemplateService.getCompaniesFromDirectory(org.apache.commons.lang3.StringUtils.replace(pathToSuppliersByTaxId, "{taxid}", a.getTaxId()), SupplierAgent.class).stream().map(SupplierAgent::getBpsId);
             b.setRestriction(isRuleRestricted(ids) ? "Y" : "N");
             b.setBpsAvailable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
-            b.setConfidence(((Discovery) a).getReason() != null ? ((Discovery) a).getReason() : a.getConfidence());
+            b.setConfidence(a.getReason() != null ? a.getReason() : a.getConfidence());
             b.setCardAcceptable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
         } else if (a instanceof Registration) {
             RegistrationModelSupplier b = (RegistrationModelSupplier) target;

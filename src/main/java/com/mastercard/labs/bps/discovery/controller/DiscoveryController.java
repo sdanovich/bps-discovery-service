@@ -1,13 +1,18 @@
 package com.mastercard.labs.bps.discovery.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
+import com.mastercard.labs.bps.discovery.domain.journal.Record;
+import com.mastercard.labs.bps.discovery.domain.journal.Registration;
 import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelSupplier;
 import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelBuyer;
+import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelSupplier;
+import com.mastercard.labs.bps.discovery.webhook.model.RegistrationModelBuyer;
+import com.mastercard.labs.bps.discovery.webhook.model.RegistrationModelSupplier;
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,25 +50,30 @@ public class DiscoveryController {
     @Autowired
     private BoundMapperFacade<Discovery, DiscoveryModelBuyer> discoveryToCSVPartial;
 
+    @Autowired
+    private BoundMapperFacade<Registration, RegistrationModelSupplier> registrationToCSVFull;
+    @Autowired
+    private BoundMapperFacade<Registration, RegistrationModelBuyer> registrationToCSVPartial;
+
 
     @PostMapping(value = "/discovery/suppliers", produces = {"application/json"})
     public ResponseEntity<Link> handleSupplierLookup(@RequestParam("file") MultipartFile file) throws IOException {
-        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.LOOKUP, BatchFile.ENTITY.SUPPLIER), "suppliers");
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.LOOKUP, BatchFile.ENTITY.SUPPLIER), "suppliers", "discovery");
     }
 
     @PostMapping(value = "/discovery/buyers", produces = {"application/json"})
     public ResponseEntity<Link> handleBuyersLookup(@RequestParam("file") MultipartFile file) throws IOException {
-        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.LOOKUP, BatchFile.ENTITY.BUYER), "buyers");
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.LOOKUP, BatchFile.ENTITY.BUYER), "buyers", "discovery");
     }
 
     @PostMapping(value = "/registration/suppliers", produces = {"application/json"})
-    public ResponseEntity<Link> handleSupplierLookupWithAgent(@RequestParam("file") MultipartFile file,  @RequestHeader(value = "agentName") String agentName) throws IOException {
-        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.SUPPLIER, agentName), "suppliers");
+    public ResponseEntity<Link> handleSupplierLookupWithAgent(@RequestParam("file") MultipartFile file, @RequestHeader(value = "agentName") String agentName) throws IOException {
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.SUPPLIER, agentName), "suppliers", "registration");
     }
 
     @PostMapping(value = "/registration/buyers", produces = {"application/json"})
-    public ResponseEntity<Link> handleBuyersLookupWithAgent(@RequestParam("file") MultipartFile file,  @RequestHeader(value = "agentName") String agentName)  throws IOException {
-        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.BUYER, agentName), "buyers");
+    public ResponseEntity<Link> handleBuyersLookupWithAgent(@RequestParam("file") MultipartFile file, @RequestHeader(value = "agentName") String agentName) throws IOException {
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.BUYER, agentName), "buyers", "registration");
     }
 
     @GetMapping(value = "/discovery/suppliers/{id}", produces = {"application/json"})
@@ -76,41 +86,82 @@ public class DiscoveryController {
         return handleFile(id, discoveryToCSVPartial, DiscoveryModelBuyer.class);
     }
 
-    private URI getUri(String path, BatchFile batchFile) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/discovery/" + path + "/{id}")
+    @GetMapping(value = "/registration/suppliers/{id}", produces = {"application/json"})
+    public ResponseEntity<?> providerSupplierLookup(@PathVariable("id") String id) {
+        return handleFile(id, registrationToCSVFull, RegistrationModelSupplier.class);
+    }
+
+    @GetMapping(value = "/registration/buyers/{id}", produces = {"application/json"})
+    public ResponseEntity<?> providerBuyerLookup(@PathVariable("id") String id) {
+        return handleFile(id, registrationToCSVPartial, RegistrationModelBuyer.class);
+    }
+
+    private URI getUri(String path, BatchFile batchFile, String context) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/" + context + "/" + path + "/{id}")
                 .buildAndExpand(batchFile.getId()).toUri();
     }
 
-    private ResponseEntity<Link> getLinkResponseEntity(BatchFile batchFile, String entity) throws MalformedURLException {
-        return ResponseEntity.ok(new Link(getUri(entity, batchFile).toASCIIString(), null));
+    private ResponseEntity<Link> getLinkResponseEntity(BatchFile batchFile, String entity, String context) throws MalformedURLException {
+        return ResponseEntity.ok(new Link(getUri(entity, batchFile, context).toASCIIString(), null));
     }
 
-    private <T> ResponseEntity handleFile(String id, BoundMapperFacade<Discovery, T> boundMapperFacade, Class<T> model) {
+    private <T> ResponseEntity handleFile(String id, BoundMapperFacade<? extends Record, T> boundMapperFacade, Class<T> model) {
         try {
             BatchFile batchFile = discoveryService.isBatchFileReady(id);
-            if (batchFile.getStatus() == BatchFile.STATUS.COMPLETE) {
-                CsvMapper mapper = new CsvMapper();
-                mapper.disable(SORT_PROPERTIES_ALPHABETICALLY);
-                CsvSchema schema = mapper.schemaFor(model).withHeader();
-                byte[] isr = mapper.writer(schema)
-                        .writeValueAsString(discoveryService.getDiscoveries(batchFile.getId()).stream().map(boundMapperFacade::map)
-                                .collect(Collectors.toList())).getBytes();
-                HttpHeaders respHeaders = new HttpHeaders();
-                respHeaders.setContentLength(isr.length);
-                respHeaders.setContentType(MediaType.parseMediaType("application/octet-stream"));
-                respHeaders.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-                String newFileName = StringUtils.substringAfter(FilenameUtils.removeExtension(batchFile.getFileName()), ".")
-                        + "_Results."
-                        + FilenameUtils.getExtension(batchFile.getFileName());
-                respHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + newFileName);
-                return new ResponseEntity(isr, respHeaders, HttpStatus.OK);
+            if (boundMapperFacade.getAType().getCanonicalName() == "") {
+                return getResponseEntity(batchFile, getDiscoveries((BoundMapperFacade<Discovery, T>) boundMapperFacade, model, batchFile));
             } else {
-                return new ResponseEntity(new Link(null, "File is still processing.  Please check later"), HttpStatus.BAD_REQUEST);
+                return getResponseEntity(batchFile, getRegistrations((BoundMapperFacade<Registration, T>) boundMapperFacade, model, batchFile));
             }
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new ResponseEntity(new Link(null, "discovery id " + id + " is invalid"), HttpStatus.BAD_REQUEST);
         }
+
+    }
+
+    private <T> byte[] getDiscoveries(BoundMapperFacade<Discovery, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
+        if (batchFile.getStatus() == BatchFile.STATUS.COMPLETE) {
+            CsvMapper mapper = new CsvMapper();
+            mapper.disable(SORT_PROPERTIES_ALPHABETICALLY);
+            CsvSchema schema = mapper.schemaFor(model).withHeader();
+            byte[] isr = mapper.writer(schema)
+                    .writeValueAsString(discoveryService.getDiscoveries(batchFile.getId()).stream().map(boundMapperFacade::map)
+                            .collect(Collectors.toList())).getBytes();
+            return isr;
+        } else {
+            return null;
+        }
+    }
+
+    private <T> byte[] getRegistrations(BoundMapperFacade<Registration, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
+        if (batchFile.getStatus() == BatchFile.STATUS.COMPLETE) {
+            CsvMapper mapper = new CsvMapper();
+            mapper.disable(SORT_PROPERTIES_ALPHABETICALLY);
+            CsvSchema schema = mapper.schemaFor(model).withHeader();
+            byte[] isr = mapper.writer(schema)
+                    .writeValueAsString(discoveryService.getRegistrations(batchFile.getId()).stream().map(boundMapperFacade::map)
+                            .collect(Collectors.toList())).getBytes();
+            return isr;
+        } else {
+            return null;
+        }
+    }
+
+    private ResponseEntity getResponseEntity(BatchFile batchFile, byte[] isr) {
+        if (isr == null) {
+            return new ResponseEntity(new Link(null, "File is still processing.  Please check later"), HttpStatus.BAD_REQUEST);
+        }
+        HttpHeaders respHeaders = new HttpHeaders();
+        respHeaders.setContentLength(isr.length);
+        respHeaders.setContentType(MediaType.parseMediaType("application/octet-stream"));
+        respHeaders.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        String newFileName = StringUtils.substringAfter(FilenameUtils.removeExtension(batchFile.getFileName()), ".")
+                + "_Results."
+                + FilenameUtils.getExtension(batchFile.getFileName());
+        respHeaders.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + newFileName);
+        return new ResponseEntity(isr, respHeaders, HttpStatus.OK);
     }
 
     @GetMapping(value = "/api/discovery/table", produces = {"application/json"})
