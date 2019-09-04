@@ -109,6 +109,8 @@ public class BatchFileProcessor {
 
             } catch (IOException e) {
                 log.error(e.getMessage(), e.getLocalizedMessage(), e);
+                batchFile.setStatus(BatchFile.STATUS.INVALID_FILE);
+                batchFileRepository.save(batchFile);
             }
         }
     }

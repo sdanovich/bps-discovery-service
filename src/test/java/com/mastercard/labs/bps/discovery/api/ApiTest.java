@@ -1,6 +1,8 @@
 package com.mastercard.labs.bps.discovery.api;
 
+import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
+import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
 import com.mastercard.labs.bps.discovery.schedule.BatchFileProcessor;
@@ -44,6 +46,9 @@ public class ApiTest {
     private RestTemplateServiceImpl restTemplateService;
 
     @Autowired
+    private BatchFileRepository batchFileRepository;
+
+    @Autowired
     private DiscoveryRepository discoveryRepository;
 
     @Autowired
@@ -54,6 +59,13 @@ public class ApiTest {
 
     @Autowired
     private BatchFileProcessor batchFileProcessor;
+
+    @Before
+    public void setUp() {
+        discoveryRepository.deleteAll();
+        registrationRepository.deleteAll();
+        batchFileRepository.deleteAll();
+    }
 
     @Test
     public void testCallToTrack() {
@@ -73,10 +85,18 @@ public class ApiTest {
         }
     }
 
-    @Before
-    public void setUp() {
-        discoveryRepository.deleteAll();
-        registrationRepository.deleteAll();
+
+    @Test
+    public void runNegativeDiscoveryTest() throws Exception {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("discovery.file/Discovery.csv");
+        MockMultipartFile file = new MockMultipartFile("file", "Discovery.csv", MediaType.APPLICATION_OCTET_STREAM_VALUE, is);
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.multipart("/discovery/buyers")
+                .file(file)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString())
+                .accept(MediaType.ALL))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful()).andReturn();
+        batchFileProcessor.process();
+        Assert.assertThat(batchFileRepository.findAll().get(0).getStatus(), Is.is(BatchFile.STATUS.INVALID_FILE));
     }
 
     @Test
