@@ -18,7 +18,8 @@ public class BatchFile extends BpsEntity {
     public enum STATUS {
         RECEIVED,
         PROCESSING,
-        COMPLETE
+        COMPLETE,
+        INVALID_FILE
     }
 
     public enum TYPE {

@@ -50,6 +50,9 @@
                     <div v-else-if="entry[key].toLowerCase() === 'complete'">
                         <div style="background-color: #32C367;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Complete</div>
                     </div>
+                    <div v-else-if="entry[key].toLowerCase() === 'invalid_file'">
+                        <div style="background-color: #FF0000;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Invalid File</div>
+                    </div>
                     <div v-else style="font-family: sans-serif">{{entry[key]}}</div>
                 </td>
             </tr>
