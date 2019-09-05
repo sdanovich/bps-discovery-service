@@ -52,16 +52,6 @@ public class Registration extends BpsEntity implements Record {
     }
 
     @Override
-    public Discovery.STATUS getStatus() {
-        return null;
-    }
-
-    @Override
-    public void setStatus(Discovery.STATUS status) {
-
-    }
-
-    @Override
     public Discovery.EXISTS getFound() {
         return null;
     }
@@ -70,4 +60,6 @@ public class Registration extends BpsEntity implements Record {
     public void setFound(Discovery.EXISTS exists) {
 
     }
+
+
 }

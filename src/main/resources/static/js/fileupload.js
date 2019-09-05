@@ -19285,9 +19285,9 @@
 				that.loading = 1;
 				new _promise2.default(function (resolve, reject) {
 					var client = new XMLHttpRequest();
+                    client.open('POST', url, true);
                     client.setRequestHeader("agentName", "CSI");
-					client.open('POST', url, true);
-					client.onreadystatechange = function () {
+                    client.onreadystatechange = function () {
 						if (this.readyState !== 4) {
 							return;
 						}

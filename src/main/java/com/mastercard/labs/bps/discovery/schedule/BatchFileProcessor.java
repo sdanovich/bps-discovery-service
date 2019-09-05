@@ -153,6 +153,7 @@ public class BatchFileProcessor {
         try {
             if (batchFile.getType() == BatchFile.TYPE.REGISTRATION && !discoveryService.isDiscoveryValid(record, batchFile.getEntityType())) {
                 record.setReason("Registration Error - Missing required fields");
+                record.setStatus(STATUS.FAILED);
                 throw new ValidationException(record.getReason());
             }
             ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity = restTemplateService.callTrack(record).get();
