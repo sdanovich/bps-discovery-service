@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
+import com.mastercard.labs.bps.discovery.exceptions.ExecutionException;
 import com.mastercard.labs.bps.discovery.exceptions.ResourceNotFoundException;
 import com.mastercard.labs.bps.discovery.exceptions.TrackAuthenticationException;
-import com.mastercard.labs.bps.discovery.persistence.support.RequestResponseLoggingInterceptor;
-import com.mastercard.labs.bps.discovery.webhook.model.TrackRequestModel;
-import com.mastercard.labs.bps.discovery.webhook.model.TrackResponseModel;
+import com.mastercard.labs.bps.discovery.webhook.model.*;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.BoundMapperFacade;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +18,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.util.Pair;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,7 +26,6 @@ import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -50,9 +47,6 @@ public class RestTemplateServiceImpl {
     @Autowired
     private ObjectMapper jacksonObjectMapper;
 
-    @Autowired
-    private RequestResponseLoggingInterceptor requestResponseLoggingInterceptor;
-
     @Value("${track.post.singleVendorDetail}")
     private String urlToTrack;
 
@@ -72,6 +66,15 @@ public class RestTemplateServiceImpl {
 
     @Value("${track.auth.client.id}")
     private String trackAuthClientId;
+
+    @Value("${directory.registerBuyer}")
+    private String registerBuyer;
+
+    @Value("${directory.registerSupplier}")
+    private String registerSupplier;
+
+    @Value("${directory.agentList}")
+    private String agentList;
 
     @Value("${track.auth.scope}")
     private String trackAuthScope;
@@ -120,6 +123,44 @@ public class RestTemplateServiceImpl {
             log.error(e.getMessage(), e);
         }
         return Optional.empty();
+    }
+
+    public Optional<Buyer> registerBuyer(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException{
+        try {
+            HttpEntity<?> request = getHttpEntity(businessEntity, bpsId, agentName);
+            ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerBuyer, HttpMethod.POST, request, Object.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), Buyer.class));
+            }
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new ExecutionException(e.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Supplier> registerSupplier(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException{
+        try {
+            HttpEntity<?> request = getHttpEntity(businessEntity, bpsId, agentName);
+            ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerSupplier, HttpMethod.POST, request, Object.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), Supplier.class));
+            }
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new ExecutionException(e.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    private HttpEntity<?> getHttpEntity(BusinessEntity businessEntity, String bpsId, String agentName) {
+        Map req_payload = new HashMap();
+        req_payload.put("businessEntity", businessEntity);
+        req_payload.put("bpsId", bpsId);
+        req_payload.put("agentName", agentName);
+        return new HttpEntity<>(req_payload, getHeaders());
     }
 
     public <T> List<T> getCompaniesFromDirectory(String url, Class<T> clazz) {
@@ -176,16 +217,4 @@ public class RestTemplateServiceImpl {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-
-    private RestTemplate setInterceptorAndErrorHandler(RestTemplate restTemplate) {
-        restTemplate.setInterceptors(Collections.singletonList(requestResponseLoggingInterceptor));
-        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-            @Override
-            public boolean hasError(HttpStatus statusCode) {
-                return false;
-            }
-        });
-        return restTemplate;
-    }
-
 }

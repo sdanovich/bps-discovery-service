@@ -9,10 +9,8 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BusinessEntity {
-    private String name;
-    private String trackId;
-    private String taxId;
-    private Address address;
-}
 
+public class Buyer {
+    private String bpsId;
+    private String name;
+}

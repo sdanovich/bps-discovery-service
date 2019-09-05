@@ -37,6 +37,9 @@ public class Registration extends BpsEntity implements Record {
     String dbId;
     String trackId;
     String confidence;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Discovery.STATUS status;
 
     @Override
     public String getReason() {

@@ -101,10 +101,8 @@ public class BatchFileProcessor {
                     if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
                         persistRecord(batchFile, discoveryRepository.save(getDiscovery(batchFile, map)));
                     } else if (batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
-                        Registration registration = (Registration) persistRecord(batchFile, registrationRepository.save(getRegistration(batchFile, map)));
-                        register(batchFile, registration);
+                        persistRecord(batchFile, registrationRepository.save(getRegistration(batchFile, map)));
                     }
-
                 });
 
             } catch (IOException e) {
@@ -206,12 +204,12 @@ public class BatchFileProcessor {
             record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
-        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save((Registration) record);
+        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
     }
 
 
-    private void register(BatchFile batchFile, Registration registration) throws ExecutionException {
-        if (!StringUtils.isBlank(batchFile.getAgentName()) || StringUtils.equalsAnyIgnoreCase(registration.getConfidence(), "HIGHCONFIDENCE")) {
+    private Registration register(BatchFile batchFile, Registration registration) throws ExecutionException {
+        if (StringUtils.equalsAnyIgnoreCase(registration.getConfidence(), "HIGHCONFIDENCE") && registration.getStatus() == STATUS.COMPLETE) {
             BusinessEntity businessEntity = new BusinessEntity();
             Address address = new Address();
             address.setAddress1(registration.getAddress1());
@@ -223,13 +221,23 @@ public class BatchFileProcessor {
             address.setZip(registration.getZip());
             businessEntity.setAddress(address);
             businessEntity.setName(registration.getCompanyName());
-
-
-            //, String bpsId, String agentName
-        } else {
-            throw new com.mastercard.labs.bps.discovery.exceptions.ExecutionException("Error: Agent name doesn't exist");
+            businessEntity.setTaxId(registration.getTaxId());
+            businessEntity.setTrackId(registration.getTrackId());
+            try {
+                switch (batchFile.getEntityType()) {
+                    case BUYER:
+                        restTemplateService.registerBuyer(businessEntity, registration.getBpsId(), batchFile.getAgentName());
+                        break;
+                    case SUPPLIER:
+                        restTemplateService.registerSupplier(businessEntity, registration.getBpsId(), batchFile.getAgentName());
+                        break;
+                }
+                registration.setStatus(STATUS.COMPLETE);
+            } catch (ExecutionException e) {
+                registration.setReason(e.getMessage());
+                registration.setStatus(STATUS.FAILED);
+            }
         }
+        return registration;
     }
-
-
 }

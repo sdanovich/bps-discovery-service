@@ -91,6 +91,9 @@ directory:
     suppliersByTaxId: /company/{taxid}/suppliers
     buyerByTrackId: /company/track/{trackid}/buyers
     companyByTrackId: /company/track/{trackid}
+    registerBuyer: /registration/buyers
+    registerSupplier: /registration/suppliers
+    agentList: /agents
 
 webhook:
   tolerance: 60
