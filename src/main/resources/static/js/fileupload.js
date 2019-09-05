@@ -109,7 +109,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			},
 			uploadFail: function uploadFail(status, field, key) {
@@ -120,7 +120,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			}
 		}
@@ -156,7 +156,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			},
 			uploadFail: function uploadFail(status, field, key) {
@@ -167,7 +167,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			}
 		}
@@ -203,7 +203,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			},
 			uploadFail: function uploadFail(status, field, key) {
@@ -214,7 +214,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			}
 		}
@@ -249,7 +249,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			},
 			uploadFail: function uploadFail(status, field, key) {
@@ -260,7 +260,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			}
 		}
@@ -295,7 +295,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			},
 			uploadFail: function uploadFail(status, field, key) {
@@ -306,7 +306,7 @@
                 setTimeout(() => {
                         this.show2 = !this.show2;
                         window.location.reload();
-                    }, 5000);
+                    }, 2000);
 
 			}
 		}
@@ -12497,7 +12497,7 @@
 	  }
 	}
 
-	var linkerCache = new Cache(5000);
+	var linkerCache = new Cache(2000);
 
 	/**
 	 * A factory that can be used to create instances of a
