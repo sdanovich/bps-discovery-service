@@ -125,10 +125,10 @@ public class RestTemplateServiceImpl {
         return Optional.empty();
     }
 
-    public Optional<Buyer> registerBuyer(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException{
+    public Optional<Buyer> registerBuyer(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException {
         try {
             HttpEntity<?> request = getHttpEntity(businessEntity, bpsId, agentName);
-            ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerBuyer, HttpMethod.POST, request, Object.class);
+            ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerBuyer + "?bpsId=" + bpsId + "&agentName=" + agentName, HttpMethod.POST, request, Object.class);
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), Buyer.class));
             }
@@ -140,7 +140,7 @@ public class RestTemplateServiceImpl {
         return Optional.empty();
     }
 
-    public Optional<Supplier> registerSupplier(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException{
+    public Optional<Supplier> registerSupplier(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException {
         try {
             HttpEntity<?> request = getHttpEntity(businessEntity, bpsId, agentName);
             ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerSupplier, HttpMethod.POST, request, Object.class);
@@ -158,8 +158,6 @@ public class RestTemplateServiceImpl {
     private HttpEntity<?> getHttpEntity(BusinessEntity businessEntity, String bpsId, String agentName) {
         Map req_payload = new HashMap();
         req_payload.put("businessEntity", businessEntity);
-        req_payload.put("bpsId", bpsId);
-        req_payload.put("agentName", agentName);
         return new HttpEntity<>(req_payload, getHeaders());
     }
 

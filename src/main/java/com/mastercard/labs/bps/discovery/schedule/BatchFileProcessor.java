@@ -87,6 +87,13 @@ public class BatchFileProcessor {
                 log.info("cannot update status", e.getLocalizedMessage(), e);
             }
         });
+        batchFileRepository.findAllProcessedRegistriesBatches().stream().filter(Objects::nonNull).forEach(batchFile -> {
+            try {
+                batchFileRepository.save(batchFileRepository.getOne(batchFile.getId()).withStatus(COMPLETE));
+            } catch (Exception e) {
+                log.info("cannot update status", e.getLocalizedMessage(), e);
+            }
+        });
     }
 
     private void processIncoming(BatchFile batchFile) {
@@ -97,7 +104,7 @@ public class BatchFileProcessor {
             CsvMapper csvMapper = new CsvMapper();
             try {
                 //TODO: error - cannot be multiple
-                csvMapper.readerFor(Map.class).with(csvSchema).readValues(byteEncryptor.decrypt(batchFile.getContent())).readAll().parallelStream().filter(o -> o instanceof LinkedHashMap).map(o -> (LinkedHashMap<String, String>) o).forEach(map -> {
+                csvMapper.readerFor(Map.class).with(csvSchema).readValues(byteEncryptor.decrypt(batchFile.getContent())).readAll().stream().filter(o -> o instanceof LinkedHashMap).map(o -> (LinkedHashMap<String, String>) o).forEach(map -> {
                     if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
                         persistRecord(batchFile, discoveryRepository.save(getDiscovery(batchFile, map)));
                     } else if (batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
@@ -168,8 +175,8 @@ public class BatchFileProcessor {
                     } else if (responseDetails.get(0).getMatchResults() != null && responseDetails.get(0).getMatchResults().getMatchScoreData() != null) {
                         record.setConfidence(responseDetails.get(0).getMatchResults().getMatchStatus());
                         Integer rating = responseDetails.get(0).getMatchResults().getMatchScoreData().getMatchPercentage();
-                        if (responseDetails.get(0).getRequestData() != null) {
-                            record.setTrackId(responseDetails.get(0).getRequestData().getTrackId());
+                        if (!CollectionUtils.isEmpty(responseDetails.get(0).getMatchData())) {
+                            record.setTrackId(responseDetails.get(0).getMatchData().get(0).getRegisteredBusinessData().getTrackId());
                         }
                         if (rating != null) {
                             record.setFound((2 == rating) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);

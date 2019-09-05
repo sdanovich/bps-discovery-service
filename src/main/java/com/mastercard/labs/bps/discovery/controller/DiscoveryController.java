@@ -108,7 +108,7 @@ public class DiscoveryController {
     private <T> ResponseEntity handleFile(String id, BoundMapperFacade<? extends Record, T> boundMapperFacade, Class<T> model) {
         try {
             BatchFile batchFile = discoveryService.isBatchFileReady(id);
-            if (boundMapperFacade.getAType().getCanonicalName() == "") {
+            if (boundMapperFacade.getAType().getRawType() == Discovery.class) {
                 return getResponseEntity(batchFile, getDiscoveries((BoundMapperFacade<Discovery, T>) boundMapperFacade, model, batchFile));
             } else {
                 return getResponseEntity(batchFile, getRegistrations((BoundMapperFacade<Registration, T>) boundMapperFacade, model, batchFile));
