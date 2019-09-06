@@ -108,7 +108,13 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     public List<DiscoveryTable> getBatches(Integer timeZone) {
-        return batchFileRepository.findAll().stream().sorted(Comparator.comparing(BatchFile::getCreationDate).reversed()).map(batchFile -> new DiscoveryTable(batchFile.getId(), batchFile.getFileName(), batchFile.getCreationDate(), timeZone, batchFile.getStatus(), batchFile.getType(), batchFile.getEntityType())).collect(Collectors.toList());
+        try {
+            return batchFileRepository.findAll().stream().sorted(Comparator.comparing(BatchFile::getCreationDate).reversed()).map(batchFile -> new DiscoveryTable(batchFile.getId(), batchFile.getFileName(), batchFile.getCreationDate(), timeZone, batchFile.getStatus(), batchFile.getType(), batchFile.getEntityType())).collect(Collectors.toList());
+        }
+        catch(Exception e) {
+            logger.error(e);
+            throw e;
+        }
     }
 
     @Override
