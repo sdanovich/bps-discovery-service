@@ -18,7 +18,7 @@
 
     <!-- component template -->
     <script type="text/x-template" id="grid-template">
-        <table>
+        <table style="2px solid #f9f9f9;">
             <thead>
             <tr>
                 <th v-for="key in columns"
@@ -37,6 +37,10 @@
                         <a :href="entry[key]"><img border="0" alt="download" th:src="@{/img/download.gif}"
                                                    width="25"></a>
                     </div>
+                    <div v-else-if="entry[key] === ''" align="center">
+                        <a href="javascript:window.location.reload();"><img border="0" alt="refresh" th:src="@{/img/refresh.jpg}"
+                                                                             width="25"></a>
+                    </div>
                     <div v-else-if="entry[key].toLowerCase() === 'received'">
                         <div style="background-color: #ffff33;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Uploaded</div>
                     </div>
@@ -45,6 +49,9 @@
                     </div>
                     <div v-else-if="entry[key].toLowerCase() === 'complete'">
                         <div style="background-color: #32C367;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Complete</div>
+                    </div>
+                    <div v-else-if="entry[key].toLowerCase() === 'invalid_file'">
+                        <div style="background-color: #FF0000;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">Invalid File</div>
                     </div>
                     <div v-else style="font-family: sans-serif">{{entry[key]}}</div>
                 </td>
@@ -147,7 +154,7 @@
         <div id="app3">
             <div class="item3">
                 <a class="button button3" @click="toggleShow2">Buyer Register</a>
-                <bps-discovery-upload url="/bps/discovery/v0.1/discovery/buyers"
+                <bps-discovery-upload url="/bps/discovery/v0.1/registration/buyers"
                                       lang-type="en"
                                       :only-single="true"
                                       :value="show2"
@@ -174,7 +181,7 @@
         <div id="app4">
             <div class="item4">
                 <a class="button button3" @click="toggleShow2">Supplier Register</a>
-                <bps-discovery-upload url="/bps/discovery/v0.1/discovery/suppliers"
+                <bps-discovery-upload url="/bps/discovery/v0.1/registration/suppliers"
                                       lang-type="en"
                                       :only-single="true"
                                       :value="show2"

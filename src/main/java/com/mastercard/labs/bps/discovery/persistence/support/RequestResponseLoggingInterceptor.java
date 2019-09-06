@@ -2,6 +2,8 @@ package com.mastercard.labs.bps.discovery.persistence.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mastercard.labs.bps.discovery.util.HttpServletResponseCopier;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Service
@@ -32,6 +35,7 @@ public class RequestResponseLoggingInterceptor implements ClientHttpRequestInter
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
         logRequest(request, body);
         ClientHttpResponse response = execution.execute(request, body);
+        logResponse(response.getStatusCode(), response.getHeaders(), new HttpServletResponseCopier((HttpServletResponse) response).getCopy());
         return response;
     }
 
@@ -46,12 +50,12 @@ public class RequestResponseLoggingInterceptor implements ClientHttpRequestInter
         //}
     }
 
-    public void logResponse(HttpStatus httpStatus, HttpHeaders httpHeaders, String body) throws IOException {
+    public void logResponse(HttpStatus httpStatus, HttpHeaders httpHeaders, byte[] body) throws IOException {
         //if (log.isDebugEnabled()) {
         log.debug("============================response begin==========================================");
         log.debug("Status code  : {}", "" + httpStatus);
         log.debug("Headers      : {}", getHeaders(httpHeaders));
-        log.debug("Response body: {}", getBody(body.getBytes()));
+        log.debug("Response body: {}", getBody(body));
         log.debug("=======================response end=================================================");
         //}
     }

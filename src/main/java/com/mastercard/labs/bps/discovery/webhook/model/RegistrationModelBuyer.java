@@ -10,20 +10,20 @@ import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import java.io.Serializable;
 
 @JsonPropertyOrder(value = {DiscoveryConst.COMPANY_NAME, DiscoveryConst.ADDRESS_LINE_1, DiscoveryConst.ADDRESS_LINE_2, DiscoveryConst.ADDRESS_LINE_3,
-        DiscoveryConst.CITY, DiscoveryConst.STATE_PROVINCE, DiscoveryConst.COUNTRY, DiscoveryConst.ZIP, DiscoveryConst.TAX_ID, DiscoveryConst.DB_ID,
-        DiscoveryConst.BPS_AVAILABLE, DiscoveryConst.CONFIDENCE})
+        DiscoveryConst.CITY, DiscoveryConst.STATE_PROVINCE, DiscoveryConst.COUNTRY, DiscoveryConst.ZIP, DiscoveryConst.BUYER_ID, DiscoveryConst.TAX_ID, DiscoveryConst.DB_ID,
+        DiscoveryConst.STATUS, DiscoveryConst.REASON})
 @Getter
 @Setter
 @NoArgsConstructor
-public class DiscoveryModelPartial implements Serializable {
+public class RegistrationModelBuyer implements Serializable, Model {
     @JsonProperty(value = DiscoveryConst.COMPANY_NAME)
     private String companyName;
     @JsonProperty(value = DiscoveryConst.ADDRESS_LINE_1)
-    private String addressLine1;
+    private String address1;
     @JsonProperty(value = DiscoveryConst.ADDRESS_LINE_2)
-    private String addressLine2;
+    private String address2;
     @JsonProperty(value = DiscoveryConst.ADDRESS_LINE_3)
-    private String addressLine3;
+    private String address3;
     @JsonProperty(value = DiscoveryConst.CITY)
     private String city;
     @JsonProperty(value = DiscoveryConst.STATE_PROVINCE)
@@ -32,12 +32,14 @@ public class DiscoveryModelPartial implements Serializable {
     private String country;
     @JsonProperty(value = DiscoveryConst.ZIP)
     private String zip;
+    @JsonProperty(value = DiscoveryConst.BUYER_ID)
+    private String buyerId;
     @JsonProperty(value = DiscoveryConst.TAX_ID)
     private String taxId;
     @JsonProperty(value = DiscoveryConst.DB_ID)
     private String dbId;
-    @JsonProperty(value = DiscoveryConst.BPS_AVAILABLE)
-    private String bpsAvailable;
-    @JsonProperty(value = DiscoveryConst.CONFIDENCE)
-    private String confidence;
+    @JsonProperty(value = DiscoveryConst.STATUS)
+    private String status;
+    @JsonProperty(value = DiscoveryConst.REASON)
+    private String reason;
 }

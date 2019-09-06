@@ -17,6 +17,10 @@ public class DiscoveryConst {
     public static final String CARD_ACCEPTANCE = "Card Acceptance";
     public static final String RESTRICTIONS = "Restrictions";
     public static final String CONFIDENCE = "Confidence";
+    public static final String SUPPLIER_ID = "Supplier ID";
+    public static final String BUYER_ID = "Buyer ID";
 
     public static final String FILE_EXT = "CSV File Extension";
+    public static final String STATUS = "Status";
+    public static final String REASON = "Reason";
 }

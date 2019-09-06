@@ -18,7 +18,7 @@ input {
 }
 
 th {
-    background-color: #f9f9f9;
+    background-color: #f4f5f7;
     color: #808080;
     cursor: pointer;
     -webkit-user-select: none;
@@ -37,7 +37,7 @@ th, td {
 }
 
 th.active {
-    color: #fff;
+    color: #808080;
 }
 
 th.active .arrow {
@@ -59,13 +59,13 @@ th.active .arrow {
 .arrow.asc {
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-bottom: 4px solid #fff;
+    border-bottom: 4px solid #808080;
 }
 
 .arrow.dsc {
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 4px solid #fff;
+    border-top: 4px solid #808080;
 }
 
 .button {
@@ -87,5 +87,11 @@ th.active .arrow {
         border-radius: 8px;
         font-family: sans-serif;
         }
+
+.button3:hover {
+  background-color: #ff8000ad;
+  color: white;
+}
+
 .button4 {border-radius: 12px;}
 .button5 {border-radius: 50%;}
