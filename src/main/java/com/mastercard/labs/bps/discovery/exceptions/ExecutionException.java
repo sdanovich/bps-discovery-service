@@ -1,6 +1,7 @@
 package com.mastercard.labs.bps.discovery.exceptions;
 
-import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExecutionException extends RuntimeException {
 
@@ -9,11 +10,7 @@ public class ExecutionException extends RuntimeException {
     }
 
     public ExecutionException(String... messages) {
-        super(Arrays.deepToString(messages));
-    }
-
-    public ExecutionException(String message, Exception e) {
-        super(message, e);
+        super(Stream.of(messages).collect(Collectors.joining(", ")));
     }
 
 }

@@ -148,8 +148,8 @@ public class RestTemplateServiceImpl {
                 GlobalExceptionHandler.ErrorData errorData = jacksonObjectMapper.readValue(e.getResponseBodyAsString(), GlobalExceptionHandler.ErrorData.class);
                 throw new ExecutionException(errorData.getMessages());
             } catch (IOException e1) {
-                log.error(e.getMessage(), e);
-                throw new ExecutionException(e.getMessage());
+                log.error(e1.getMessage(), e1);
+                throw new ExecutionException(e1.getMessage());
             }
         } catch (UnsupportedEncodingException e) {
             throw new ExecutionException(e.getMessage());

@@ -24,32 +24,23 @@ public class Registration extends BpsEntity implements Record {
     private BatchFile.ENTITY entityType;
     private String bpsId;
     private String batchId;
-    String companyName;
-    String address1;
-    String address2;
-    String address3;
-    String address4;
-    String city;
-    String state;
-    String country;
-    String zip;
-    String taxId;
-    String dbId;
-    String trackId;
-    String confidence;
+    private String companyName;
+    private String address1;
+    private String address2;
+    private String address3;
+    private String address4;
+    private String city;
+    private String state;
+    private String country;
+    private String zip;
+    private String taxId;
+    private String dbId;
+    private String trackId;
+    private String confidence;
+    private String reason;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Discovery.STATUS status;
-
-    @Override
-    public String getReason() {
-        return null;
-    }
-
-    @Override
-    public void setReason(String reason) {
-
-    }
 
     @Override
     public Discovery.EXISTS getFound() {
