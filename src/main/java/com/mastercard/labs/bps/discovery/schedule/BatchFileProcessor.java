@@ -209,7 +209,7 @@ public class BatchFileProcessor {
         } catch (Exception e) {
             record.setFound(Discovery.EXISTS.I);
             record.setStatus(STATUS.FAILED);
-            record.setReason(INCONCLUSIVE_STR);
+            if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
         return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
@@ -245,6 +245,9 @@ public class BatchFileProcessor {
                 registration.setReason(e.getMessage());
                 registration.setStatus(STATUS.FAILED);
             }
+        } else {
+            if (StringUtils.isBlank(registration.getReason())) registration.setReason(registration.getConfidence());
+            registration.setStatus(STATUS.FAILED);
         }
         return registration;
     }

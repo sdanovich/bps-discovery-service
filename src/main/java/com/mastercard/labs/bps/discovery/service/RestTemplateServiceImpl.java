@@ -185,7 +185,7 @@ public class RestTemplateServiceImpl {
 
 
     private String trackAuthBearer() {
-        if (tokenExpiration.get().getFirst().isEqual(LocalDateTime.MIN) || LocalDateTime.now().until(tokenExpiration.get().getFirst(), ChronoUnit.SECONDS) > 10) {
+        if (tokenExpiration.get().getFirst().isEqual(LocalDateTime.MIN) || tokenExpiration.get().getFirst().until(LocalDateTime.now(), ChronoUnit.SECONDS) > -10) {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             try {
