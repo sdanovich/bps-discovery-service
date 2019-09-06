@@ -220,7 +220,7 @@ public class BatchFileProcessor {
         if (StringUtils.equalsAnyIgnoreCase(registration.getConfidence(), "HIGHCONFIDENCE") && registration.getStatus() == STATUS.COMPLETE) {
             BusinessEntity businessEntity = new BusinessEntity();
             Address address = new Address();
-            address.setAddress1(registration.getAddress1());
+            address.setStreet(registration.getAddress1());
             address.setAddress2(registration.getAddress2());
             address.setAddress3(registration.getAddress3());
             address.setCity(registration.getCity());

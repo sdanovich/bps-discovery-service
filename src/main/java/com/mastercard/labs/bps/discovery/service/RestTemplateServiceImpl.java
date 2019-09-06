@@ -2,6 +2,7 @@ package com.mastercard.labs.bps.discovery.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mastercard.labs.bps.discovery.controller.GlobalExceptionHandler;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
@@ -17,11 +18,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.util.Pair;
 import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -126,39 +130,36 @@ public class RestTemplateServiceImpl {
     }
 
     public Optional<Buyer> registerBuyer(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException {
-        try {
-            HttpEntity<?> request = getHttpEntity(businessEntity, bpsId, agentName);
-            ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerBuyer + "?bpsId=" + bpsId + "&agentName=" + agentName, HttpMethod.POST, request, Object.class);
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), Buyer.class));
-            }
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new ExecutionException(e.getMessage());
-        }
-        return Optional.empty();
+        return getObjecttOrError(directoryPath + registerBuyer, businessEntity, bpsId, agentName, Buyer.class);
     }
 
     public Optional<Supplier> registerSupplier(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException {
-        try {
-            HttpEntity<?> request = getHttpEntity(businessEntity, bpsId, agentName);
-            ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + registerSupplier, HttpMethod.POST, request, Object.class);
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), Supplier.class));
-            }
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new ExecutionException(e.getMessage());
-        }
-        return Optional.empty();
+        return getObjecttOrError(directoryPath + registerSupplier, businessEntity, bpsId, agentName, Supplier.class);
     }
 
-    private HttpEntity<?> getHttpEntity(BusinessEntity businessEntity, String bpsId, String agentName) {
-        Map req_payload = new HashMap();
-        req_payload.put("businessEntity", businessEntity);
-        return new HttpEntity<>(req_payload, getHeaders());
+    private <T> Optional<T> getObjecttOrError(String url, BusinessEntity businessEntity, String bpsId, String agentName, Class<T> clazz) {
+        try {
+            T returns = postRequest(getRestTemplate(directoryPath), url, businessEntity, bpsId, agentName, clazz);
+            return Optional.ofNullable(returns);
+
+        } catch (HttpClientErrorException e) {
+            log.error(e.getMessage(), e);
+            try {
+                GlobalExceptionHandler.ErrorData errorData = jacksonObjectMapper.readValue(e.getResponseBodyAsString(), GlobalExceptionHandler.ErrorData.class);
+                throw new ExecutionException(errorData.getMessages());
+            } catch (IOException e1) {
+                log.error(e.getMessage(), e);
+                throw new ExecutionException(e.getMessage());
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new ExecutionException(e.getMessage());
+        }
+    }
+
+    private <T> T postRequest(RestTemplate restTemplate, String url, BusinessEntity businessEntity, String bpsId, String agentName, Class<T> clazz) throws HttpClientErrorException, UnsupportedEncodingException {
+        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+        restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
+        return restTemplate.postForObject(url + "?bpsId=" + URLEncoder.encode(bpsId, "UTF-8") + "&" + "agentName=" + URLEncoder.encode(agentName, "UTF-8"), businessEntity, clazz);
     }
 
     public <T> List<T> getCompaniesFromDirectory(String url, Class<T> clazz) {

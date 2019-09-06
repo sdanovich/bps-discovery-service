@@ -13,7 +13,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 
 public class Address implements Serializable {
-    private String address1;
+    private String street;
     private String address2;
     private String address3;
     private String city;

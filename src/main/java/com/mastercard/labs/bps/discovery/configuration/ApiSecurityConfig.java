@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 class ApiSecurityConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/**", "/js/**", "/css/**").permitAll();
+        http.cors().and().authorizeRequests().antMatchers("/**", "/js/**", "/css/**").permitAll();
         http.headers().frameOptions().disable();
         http.csrf().disable();
     }
