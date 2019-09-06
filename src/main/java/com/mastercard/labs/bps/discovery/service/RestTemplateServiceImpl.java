@@ -116,11 +116,11 @@ public class RestTemplateServiceImpl {
         }
     }
 
-    public <T> Optional<T> getCompanyFromDirectory(String url, Class<T> clazz) {
+    public <T> Optional<List<T>> getCompanyFromDirectory(String url, Class<T> clazz) {
         try {
             ResponseEntity<?> responseEntity = getRestTemplate(directoryPath).exchange(directoryPath + url, HttpMethod.GET, new HttpEntity<>(getHeaders()), Object.class);
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), clazz));
+                return Optional.ofNullable(jacksonObjectMapper.readValue(jacksonObjectMapper.writeValueAsString(responseEntity.getBody()), List.class));
             }
 
         } catch (Exception e) {

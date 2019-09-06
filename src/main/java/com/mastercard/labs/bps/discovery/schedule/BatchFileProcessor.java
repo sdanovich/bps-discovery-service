@@ -183,9 +183,9 @@ public class BatchFileProcessor {
                             if (record.getFound() == Discovery.EXISTS.Y) {
                                 if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
                                     if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
-                                        ((Discovery) record).setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToBuyer, "{trackid}", responseDetails.get(0).getRequestData().getTrackId()), BuyerAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                        ((Discovery) record).setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToBuyer, "{trackid}", record.getTrackId()), BuyerAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                     } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
-                                        ((Discovery) record).setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToSupplier, "{trackid}", responseDetails.get(0).getRequestData().getTrackId()), SupplierAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                        ((Discovery) record).setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToSupplier, "{trackid}", record.getTrackId()), SupplierAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                     }
                                 }
                             }
