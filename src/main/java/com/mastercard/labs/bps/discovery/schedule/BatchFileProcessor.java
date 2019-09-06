@@ -183,9 +183,9 @@ public class BatchFileProcessor {
                             if (record.getFound() == Discovery.EXISTS.Y) {
                                 if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
                                     if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
-                                        ((Discovery) record).setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToBuyer, "{trackid}", record.getTrackId()), BuyerAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                        ((Discovery)record).setBpsPresent(isBpsPresent((Discovery) record, pathToBuyer, BuyerAgent.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                     } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
-                                        ((Discovery) record).setBpsPresent(restTemplateService.getCompanyFromDirectory(StringUtils.replace(pathToSupplier, "{trackid}", record.getTrackId()), SupplierAgent.class).isPresent() ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                        ((Discovery)record).setBpsPresent(isBpsPresent((Discovery) record, pathToSupplier, Supplier.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                     }
                                 }
                             }
@@ -213,6 +213,10 @@ public class BatchFileProcessor {
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
         return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
+    }
+
+    private <T> boolean isBpsPresent(Discovery discovery, String path, Class<T> clazz) {
+        return !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", discovery.getTrackId()), clazz).orElse(Collections.emptyList()).isEmpty();
     }
 
 
