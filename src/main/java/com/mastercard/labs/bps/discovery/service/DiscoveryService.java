@@ -1,7 +1,6 @@
 package com.mastercard.labs.bps.discovery.service;
 
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
-import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,4 +16,11 @@ public interface DiscoveryService {
     boolean isDiscoveryValid(Record record, BatchFile.ENTITY entity);
 
     List<DiscoveryTable> getBatches(Integer timeZone);
+
+    Record persistDiscovery(String id);
+
+    Record persistRegistration(String id);
+
+    Record persistRecord(BatchFile batchFile, Record record);
+
 }

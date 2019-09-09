@@ -19233,7 +19233,7 @@
 				}
 
 				for (var i = 0; i < fileNum; i++) {
-					if (onlyCsv && files[i].type.indexOf('csv') === -1) {
+					if (onlyCsv && files[i].name.indexOf('csv') === -1) {
 						that.hasError = true;
 						that.errorMsg = lang.error.onlyCsv;
 						return false;

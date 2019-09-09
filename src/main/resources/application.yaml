@@ -22,8 +22,24 @@ crypto-service-client:
   caasv1:
     endpoint: ${CAASV1_ENDPOINT}
     hashSalt: ${CAASV1_HASH_SALT}
+# Message Queue specific configs for discovery
+event:
+  discovery:
+    exchange: discovery-exchange
+    queue:  discovery-queue
+    routing:  discovery-routing-key
+
+  registration:
+    exchange: registartion-exchange
+    queue: registration-queue
+    routing:  registration-routing-key
 
 spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
   profiles:
     include: caas
   main:

@@ -12,7 +12,9 @@ import com.mastercard.labs.bps.discovery.exceptions.ValidationException;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
+import com.mastercard.labs.bps.discovery.service.DiscoveryEventService;
 import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
+import com.mastercard.labs.bps.discovery.service.RegistrationEventService;
 import com.mastercard.labs.bps.discovery.service.RestTemplateServiceImpl;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
 import com.mastercard.labs.bps.discovery.webhook.model.*;
@@ -54,16 +56,16 @@ public class BatchFileProcessor {
     @Autowired
     private DiscoveryServiceImpl discoveryService;
 
+    @Autowired
+    private DiscoveryEventService discoveryEventService;
+
+    @Autowired
+    private RegistrationEventService registrationEventService;
+
+
     @Value("${discovery.delimiter}")
     private char delimiter;
 
-    @Value("${directory.supplierByTrackId}")
-    private String pathToSupplier;
-
-    @Value("${directory.buyerByTrackId}")
-    private String pathToBuyer;
-
-    private static final String INCONCLUSIVE_STR = "Inconclusive";
 
     @Scheduled(fixedRate = 1000 * 20)
     public void process() {
@@ -106,9 +108,9 @@ public class BatchFileProcessor {
                 //TODO: error - cannot be multiple
                 csvMapper.readerFor(Map.class).with(csvSchema).readValues(byteEncryptor.decrypt(batchFile.getContent())).readAll().stream().filter(o -> o instanceof LinkedHashMap).map(o -> (LinkedHashMap<String, String>) o).forEach(map -> {
                     if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
-                        persistRecord(batchFile, discoveryRepository.save(getDiscovery(batchFile, map)));
+                        discoveryEventService.sendDiscovery(discoveryRepository.save(getDiscovery(batchFile, map)).getId());
                     } else if (batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
-                        persistRecord(batchFile, registrationRepository.save(getRegistration(batchFile, map)));
+                        registrationEventService.sendRegistration(registrationRepository.save(getRegistration(batchFile, map)).getId());
                     }
                 });
 
@@ -153,106 +155,6 @@ public class BatchFileProcessor {
         registration.setCompanyName(map.get(DiscoveryConst.COMPANY_NAME));
         registration.setBpsId(map.get(batchFile.getEntityType() == BatchFile.ENTITY.BUYER ? DiscoveryConst.BUYER_ID : DiscoveryConst.SUPPLIER_ID));
         registration.setEntityType(batchFile.getEntityType());
-        return registration;
-    }
-
-    private Record persistRecord(BatchFile batchFile, Record record) {
-        try {
-            if (batchFile.getType() == BatchFile.TYPE.REGISTRATION && !discoveryService.isDiscoveryValid(record, batchFile.getEntityType())) {
-                record.setReason("Registration Error - Missing required fields");
-                record.setStatus(STATUS.FAILED);
-                throw new ValidationException(record.getReason());
-            }
-            ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity = restTemplateService.callTrack(record).get();
-            if (trackResponseModelResponseEntity.getStatusCode().is2xxSuccessful()) {
-                record.setStatus(STATUS.COMPLETE);
-                if (!CollectionUtils.isEmpty(trackResponseModelResponseEntity.getBody().getResponseDetail())) {
-                    List<TrackResponseModel.ResponseDetail> responseDetails = trackResponseModelResponseEntity.getBody().getResponseDetail();
-                    if (responseDetails.size() > 1) {
-                        //TODO: error - cannot be multiple
-                        record.setFound(Discovery.EXISTS.N);
-                        record.setReason("ERROR: " + "Multiple results");
-                    } else if (responseDetails.get(0).getMatchResults() != null && responseDetails.get(0).getMatchResults().getMatchScoreData() != null) {
-                        record.setConfidence(responseDetails.get(0).getMatchResults().getMatchStatus());
-                        Integer rating = responseDetails.get(0).getMatchResults().getMatchScoreData().getMatchPercentage();
-                        if (!CollectionUtils.isEmpty(responseDetails.get(0).getMatchData())) {
-                            record.setTrackId(responseDetails.get(0).getMatchData().get(0).getRegisteredBusinessData().getTrackId());
-                        }
-                        if (rating != null) {
-                            record.setFound((2 == rating) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
-                            if (record.getFound() == Discovery.EXISTS.Y) {
-                                if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
-                                    if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
-                                        ((Discovery)record).setBpsPresent(isBpsPresent((Discovery) record, pathToBuyer, BuyerAgent.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
-                                    } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
-                                        ((Discovery)record).setBpsPresent(isBpsPresent((Discovery) record, pathToSupplier, Supplier.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
-                                    }
-                                }
-                            }
-                        } else {
-                            record.setFound(Discovery.EXISTS.N);
-                        }
-                    } else {
-                        record.setFound(Discovery.EXISTS.N);
-                        record.setReason(INCONCLUSIVE_STR);
-                        log.info("ERROR: Empty result");
-                    }
-                }
-
-            } else {
-                record.setFound(Discovery.EXISTS.I);
-                record.setStatus(STATUS.FAILED);
-                record.setReason(INCONCLUSIVE_STR);
-                log.info("ERROR: " + trackResponseModelResponseEntity.getStatusCodeValue());
-            }
-
-        } catch (Exception e) {
-            record.setFound(Discovery.EXISTS.I);
-            record.setStatus(STATUS.FAILED);
-            if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
-            log.error(e.getMessage(), e.getLocalizedMessage(), e);
-        }
-        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
-    }
-
-    private <T> boolean isBpsPresent(Discovery discovery, String path, Class<T> clazz) {
-        return !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", discovery.getTrackId()), clazz).orElse(Collections.emptyList()).isEmpty();
-    }
-
-
-    private Registration register(BatchFile batchFile, Registration registration) throws ExecutionException {
-        if (StringUtils.equalsAnyIgnoreCase(registration.getConfidence(), "HIGHCONFIDENCE") && registration.getStatus() == STATUS.COMPLETE) {
-            BusinessEntity businessEntity = new BusinessEntity();
-            Address address = new Address();
-            address.setStreet(registration.getAddress1());
-            address.setAddress2(registration.getAddress2());
-            address.setAddress3(registration.getAddress3());
-            address.setCity(registration.getCity());
-            address.setState(registration.getState());
-            address.setCountry(registration.getCountry());
-            address.setZip(registration.getZip());
-            businessEntity.setAddress(address);
-            businessEntity.setName(registration.getCompanyName());
-            businessEntity.setTaxId(registration.getTaxId());
-            businessEntity.setTrackId(registration.getTrackId());
-            try {
-                switch (batchFile.getEntityType()) {
-                    case BUYER:
-                        restTemplateService.registerBuyer(businessEntity, registration.getBpsId(), batchFile.getAgentName());
-                        break;
-                    case SUPPLIER:
-                        restTemplateService.registerSupplier(businessEntity, registration.getBpsId(), batchFile.getAgentName());
-                        break;
-                }
-                registration.setStatus(STATUS.COMPLETE);
-            } catch (ExecutionException e) {
-                registration.setReason(e.getMessage());
-                registration.setStatus(STATUS.FAILED);
-            }
-        } else {
-            if (StringUtils.isBlank(registration.getReason())) registration.setReason(registration.getConfidence());
-            registration.setStatus(STATUS.FAILED);
-        }
         return registration;
     }
 }
