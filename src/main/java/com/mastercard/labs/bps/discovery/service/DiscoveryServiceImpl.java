@@ -149,6 +149,10 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         return registrationRepository.findByBatchId(batchId);
     }
 
+    public List<String> getAgents() {
+        return restTemplateService.getAgents();
+    }
+
     public Record persistDiscovery(String id) {
         Discovery discovery = discoveryRepository.findById(id).orElseThrow(() -> new ExecutionException("Discovery " + id + " not found"));
         BatchFile batchFile = batchFileRepository.findById(discovery.getBatchId()).orElseThrow(() -> new ExecutionException("Batch File " + id + " not found"));

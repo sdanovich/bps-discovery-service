@@ -15,6 +15,7 @@ import ma.glasnost.orika.BoundMapperFacade;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.util.Pair;
 import org.springframework.http.*;
@@ -137,6 +138,10 @@ public class RestTemplateServiceImpl {
         return getObjecttOrError(directoryPath + registerSupplier, businessEntity, bpsId, agentName, Supplier.class);
     }
 
+    public List<String> getAgents() throws ExecutionException {
+        return getAgents(agentList);
+    }
+
     private <T> Optional<T> getObjecttOrError(String url, BusinessEntity businessEntity, String bpsId, String agentName, Class<T> clazz) {
         try {
             T returns = postRequest(getRestTemplate(directoryPath), url, businessEntity, bpsId, agentName, clazz);
@@ -183,6 +188,19 @@ public class RestTemplateServiceImpl {
         return Collections.emptyList();
     }
 
+    public <T> List<T> getAgents(final String url) {
+        try {
+            final ResponseEntity<List<T>> response = getRestTemplate(directoryPath).exchange(
+                directoryPath + url, HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<T>>(){});
+                List<T> list = response.getBody();
+                return list;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return Collections.emptyList();
+    }
 
     private String trackAuthBearer() {
         if (tokenExpiration.get().getFirst().isEqual(LocalDateTime.MIN) || tokenExpiration.get().getFirst().until(LocalDateTime.now(), ChronoUnit.SECONDS) > -10) {

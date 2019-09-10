@@ -96,6 +96,11 @@ public class DiscoveryController {
         return handleFile(id, registrationToCSVPartial, RegistrationModelBuyer.class);
     }
 
+    @GetMapping(value = "/discovery/agents", produces = {"application/json"})
+    public ResponseEntity<List<String>> lookupBatchInfo() {
+        return ResponseEntity.ok(discoveryService.getAgents());
+    }
+
     private URI getUri(String path, BatchFile batchFile, String context) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path("/" + context + "/" + path + "/{id}")
                 .buildAndExpand(batchFile.getId()).toUri();

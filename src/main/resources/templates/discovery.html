@@ -151,9 +151,16 @@
             </modal>
         </div>-->
 
+        <div id="button-container1">
+            <a class="button button3" id="html-modal-button1" @click="showModal = 'html-modal'">
+                &nbsp;&nbsp;&nbsp;Select Agent&nbsp;&nbsp;&nbsp;
+            </a>
+            <htmlmodal v-if="showModal==='html-modal'" @close="showModal = false"></htmlmodal>
+        </div>
+
         <div id="app3">
             <div class="item3">
-                <a class="button button3" @click="toggleShow2">Buyer Register</a>
+                <a class="button button3" @click="toggleShow2">Buyer Registration</a>
                 <bps-discovery-upload url="/bps/discovery/v0.1/registration/buyers"
                                       lang-type="en"
                                       :only-single="true"
@@ -180,7 +187,7 @@
 
         <div id="app4">
             <div class="item4">
-                <a class="button button3" @click="toggleShow2">Supplier Register</a>
+                <a class="button button3" @click="toggleShow2">Supplier Registration</a>
                 <bps-discovery-upload url="/bps/discovery/v0.1/registration/suppliers"
                                       lang-type="en"
                                       :only-single="true"
@@ -245,6 +252,54 @@
 <script th:src="@{js/table.js}"></script>
 <script th:src="@{js/modal.js}"></script>
 <script th:src="@{js/fileupload.js}"></script>
+<script th:src="@{js/agents.js}"></script>
+
+<script>
+
+var store = {
+  debug: true,
+  state: {
+    message: ''
+  },
+  setMessageAction (newValue) {
+    if (this.debug) console.log('setMessageAction triggered with', newValue)
+    this.state.message = newValue
+  },
+  clearMessageAction () {
+    if (this.debug) console.log('clearMessageAction triggered')
+    this.state.message = ''
+  }
+}
+</script>
+
+<script type="text/x-template" id="html-modal-template">
+    <transition name="html-modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+                                        <div class="modal-header">
+                                            <slot name="header">Select Agent</slot>
+                                        </div>
+                    <div class="modal-body">
+                        <select class="form-control" :required="true" @change="onChange">
+                            <option>Please select agent</option>
+                            <option
+                                    v-for="option in options"
+                                    v-bind:value="option.id"
+                                    :selected="option == 'Please select agent'"
+                                    >{{ option }}</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            <button class="modal-default-button" @click="$emit('close')">Close</button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+</script>
 
 </body>
 </html>
