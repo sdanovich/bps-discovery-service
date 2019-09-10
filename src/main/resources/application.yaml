@@ -36,7 +36,7 @@ event:
 
 spring:
   rabbitmq:
-    host: ${MQP_SERVER_ADDRESS}
+    host: ${AMQP_SERVER_ADDRESS}
     port: ${AMQP_SERVER_PORT}
     username: ${AMQP_SERVER_USER}
     password: ${AMQP_SERVER_PASS}
