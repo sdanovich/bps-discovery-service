@@ -36,10 +36,10 @@ event:
 
 spring:
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${MQP_SERVER_ADDRESS}
+    port: ${AMQP_SERVER_PORT}
+    username: ${AMQP_SERVER_USER}
+    password: ${AMQP_SERVER_PASS}
   profiles:
     include: caas
   main:
