@@ -151,13 +151,6 @@
             </modal>
         </div>-->
 
-        <div id="button-container1">
-            <a class="button button3" id="html-modal-button1" @click="showModal = 'html-modal'">
-                &nbsp;&nbsp;&nbsp;Select Agent&nbsp;&nbsp;&nbsp;
-            </a>
-            <htmlmodal v-if="showModal==='html-modal'" @close="showModal = false"></htmlmodal>
-        </div>
-
         <div id="app3">
             <div class="item3">
                 <a class="button button3" @click="toggleShow2">Buyer Registration</a>
@@ -200,7 +193,13 @@
             </div>
         </div>
 
-        <!--<div id="uploadSPARegister">
+        <div class="form-group">
+            <label>Select Agent</label>
+            <select class="form-control"
+                    name="agentName" id="agentName" required="required">
+                <option disabled="disabled" selected="selected" >-- Select Agent --</option>
+            </select>
+        </div>        <!--<div id="uploadSPARegister">
             <button id="show-modal4" @click="showModal = true" class="button button3">SPA Register</button>
             &lt;!&ndash; use the modal component, pass in the prop &ndash;&gt;
             <modal v-if="showModal" @close="showModal = false">
@@ -247,59 +246,12 @@
     <!-- /.container -->
 </footer>
 
-<script src="https://unpkg.com/vue@2.5.8/dist/vue.js"></script>
-<script src="https://unpkg.com/axios@0.17.1/dist/axios.min.js"></script>
+<script th:src="@{js/vue.js}"></script>
+<script th:src="@{js/axios.min.js}"></script>
 <script th:src="@{js/table.js}"></script>
 <script th:src="@{js/modal.js}"></script>
 <script th:src="@{js/fileupload.js}"></script>
 <script th:src="@{js/agents.js}"></script>
-
-<script>
-
-var store = {
-  debug: true,
-  state: {
-    message: ''
-  },
-  setMessageAction (newValue) {
-    if (this.debug) console.log('setMessageAction triggered with', newValue)
-    this.state.message = newValue
-  },
-  clearMessageAction () {
-    if (this.debug) console.log('clearMessageAction triggered')
-    this.state.message = ''
-  }
-}
-</script>
-
-<script type="text/x-template" id="html-modal-template">
-    <transition name="html-modal">
-        <div class="modal-mask">
-            <div class="modal-wrapper">
-                <div class="modal-container">
-                                        <div class="modal-header">
-                                            <slot name="header">Select Agent</slot>
-                                        </div>
-                    <div class="modal-body">
-                        <select class="form-control" :required="true" @change="onChange">
-                            <option>Please select agent</option>
-                            <option
-                                    v-for="option in options"
-                                    v-bind:value="option.id"
-                                    :selected="option == 'Please select agent'"
-                                    >{{ option }}</option>
-                        </select>
-                    </div>
-                    <div class="modal-footer">
-                        <slot name="footer">
-                            <button class="modal-default-button" @click="$emit('close')">Close</button>
-                        </slot>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </transition>
-</script>
 
 </body>
 </html>
