@@ -19926,23 +19926,24 @@
                         if (url.indexOf("registration") > -1 && document.getElementById("agentName").selectedIndex == 0) {
                             alert("Agent name is required");
                             this.show2 = !this.show2;
-                            return;
                         }
-                        var e = document.getElementById("agentName");
-                        var selectedAgent = e.options[e.selectedIndex].value;
-                        client.setRequestHeader("agentName", selectedAgent);
-                        client.onreadystatechange = function () {
-                            if (this.readyState !== 4) {
-                                return;
-                            }
-                            if (this.status === 200) {
-                                resolve(JSON.parse(this.responseText));
-                            } else {
-                                reject(this.status);
-                            }
-                        };
-                        client.upload.addEventListener("progress", uploadProgress, false);
-                        client.send(fmData);
+                        else {
+                            var e = document.getElementById("agentName");
+                            var selectedAgent = e.options[e.selectedIndex].value;
+                            client.setRequestHeader("agentName", selectedAgent);
+                            client.onreadystatechange = function () {
+                                if (this.readyState !== 4) {
+                                    return;
+                                }
+                                if (this.status === 200) {
+                                    resolve(JSON.parse(this.responseText));
+                                } else {
+                                    reject(this.status);
+                                }
+                            };
+                            client.upload.addEventListener("progress", uploadProgress, false);
+                            client.send(fmData);
+                        }
                     }).then(function (resData) {
                         that.loading = 2;
                         that.$dispatch('uploadSuccess', resData, field, key);
