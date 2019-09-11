@@ -183,11 +183,14 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                         record.setReason("ERROR: " + "Multiple results");
                     } else if (responseDetails.get(0).getMatchResults() != null && responseDetails.get(0).getMatchResults().getMatchScoreData() != null) {
                         record.setConfidence(responseDetails.get(0).getMatchResults().getMatchStatus());
-                        Integer rating = responseDetails.get(0).getMatchResults().getMatchScoreData().getMatchPercentage();
+                        Double rating = responseDetails.get(0).getMatchResults().getMatchScoreData().getMatchPercentage();
                         if (!CollectionUtils.isEmpty(responseDetails.get(0).getMatchData())) {
                             record.setTrackId(responseDetails.get(0).getMatchData().get(0).getRegisteredBusinessData().getTrackId());
                         }
                         if (rating != null) {
+                            if(batchFile.getType() == BatchFile.TYPE.REGISTRATION && StringUtils.equalsIgnoreCase(record.getConfidence(), "HIGHCONFIDENCE") && rating != 2) {
+                                record.setConfidence("PARTIALCONFIDENCE");
+                            }
                             record.setFound((2 == rating) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                             if (record.getFound() == Discovery.EXISTS.Y) {
                                 if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {

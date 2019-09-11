@@ -93,10 +93,17 @@ modal-mask {
 #border2  {
     display: inline-block;
     height:100px;
-    width:600px;
+    width:700px;
 }
 
-#uploadBPADiscovery, #uploadSPADiscovery, #uploadBPARegister, #uploadSPARegister
-{
-    display:inline;
+
+.agent-control {
+    font-size: 17px;
+    border-radius: 0;
+    border: black;
+    background: transparent;
+    overflow: auto;
+    padding-top: 15px;
+    height: 68px;
+    text-indent: 10px;
 }

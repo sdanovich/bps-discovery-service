@@ -1473,7 +1473,7 @@ public class TrackResponseModel implements Serializable {
     public static class MatchScoreData implements Serializable {
 
         @JsonProperty("matchPercentage")
-        private Integer matchPercentage;
+        private Double matchPercentage;
         private final static long serialVersionUID = -4439745066501635988L;
 
 
