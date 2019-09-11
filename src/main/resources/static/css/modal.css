@@ -81,7 +81,8 @@ modal-mask {
     display: inline-block;
 }
 #block_container > div  {
-    display: inline-block;
+    display: inline-table;
+    width: auto;
 }
 
 #border1  {

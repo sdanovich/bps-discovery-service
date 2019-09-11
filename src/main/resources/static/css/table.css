@@ -95,10 +95,3 @@ th.active .arrow {
 
 .button4 {border-radius: 12px;}
 .button5 {border-radius: 50%;}
-
-fieldset {
-    float: left;
-    width: 50%;
-    display:inline;
-    vertical-align: top;
-}
