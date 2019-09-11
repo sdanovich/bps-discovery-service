@@ -31,7 +31,7 @@
 
     <Loggers>
         <Root level="all">
-            <AppenderRef ref="Console" level="trace"/>
+            <AppenderRef ref="Console" level="debug"/>
             <AppenderRef ref="secure" level="debug"/>
         </Root>
     </Loggers>

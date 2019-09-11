@@ -77,9 +77,24 @@ modal-mask {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
 }
-#block_container > div {
+#block_container > div > fieldset > div {
     display: inline-block;
 }
+#block_container > div  {
+    display: inline-block;
+}
+
+#border1  {
+    display: inline-block;
+    height:100px;
+    width:400px;
+}
+#border2  {
+    display: inline-block;
+    height:100px;
+    width:600px;
+}
+
 #uploadBPADiscovery, #uploadSPADiscovery, #uploadBPARegister, #uploadSPARegister
 {
     display:inline;
