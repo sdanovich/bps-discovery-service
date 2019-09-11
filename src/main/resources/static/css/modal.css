@@ -98,12 +98,15 @@ modal-mask {
 
 
 .agent-control {
-    font-size: 17px;
-    border-radius: 0;
-    border: black;
-    background: transparent;
+    font-size: 15px;
     overflow: auto;
     padding-top: 15px;
-    height: 68px;
-    text-indent: 10px;
+    height: 54px;
+    text-indent: 6px;
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 10px #E8E8E8 inset;
+    margin: 0 0 0 0;
+    width: 172px;
 }
