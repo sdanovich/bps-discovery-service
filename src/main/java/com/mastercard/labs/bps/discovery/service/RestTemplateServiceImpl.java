@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -131,18 +132,18 @@ public class RestTemplateServiceImpl {
     }
 
     public Optional<Buyer> registerBuyer(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException {
-        return getObjecttOrError(directoryPath + registerBuyer, businessEntity, bpsId, agentName, Buyer.class);
+        return getObjectOrError(directoryPath + registerBuyer, businessEntity, bpsId, agentName, Buyer.class);
     }
 
     public Optional<Supplier> registerSupplier(BusinessEntity businessEntity, String bpsId, String agentName) throws ExecutionException {
-        return getObjecttOrError(directoryPath + registerSupplier, businessEntity, bpsId, agentName, Supplier.class);
+        return getObjectOrError(directoryPath + registerSupplier, businessEntity, bpsId, agentName, Supplier.class);
     }
 
     public List<String> getAgents() throws ExecutionException {
         return getAgents(agentList);
     }
 
-    private <T> Optional<T> getObjecttOrError(String url, BusinessEntity businessEntity, String bpsId, String agentName, Class<T> clazz) {
+    private <T> Optional<T> getObjectOrError(String url, BusinessEntity businessEntity, @NotNull String bpsId, @NotNull String agentName, Class<T> clazz) {
         try {
             T returns = postRequest(getRestTemplate(directoryPath), url, businessEntity, bpsId, agentName, clazz);
             return Optional.ofNullable(returns);
@@ -164,7 +165,7 @@ public class RestTemplateServiceImpl {
     private <T> T postRequest(RestTemplate restTemplate, String url, BusinessEntity businessEntity, String bpsId, String agentName, Class<T> clazz) throws HttpClientErrorException, UnsupportedEncodingException {
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
-        return restTemplate.postForObject(url + "?bpsId=" + URLEncoder.encode(bpsId, "UTF-8") + "&" + "agentName=" + URLEncoder.encode(agentName, "UTF-8"), businessEntity, clazz);
+        return restTemplate.postForObject(url + "?bpsId=" + bpsId != null ? URLEncoder.encode(bpsId, "UTF-8") : null + "&" + "agentName=" + agentName != null ? URLEncoder.encode(agentName, "UTF-8") : null, businessEntity, clazz);
     }
 
     public <T> List<T> getCompaniesFromDirectory(String url, Class<T> clazz) {
@@ -191,11 +192,12 @@ public class RestTemplateServiceImpl {
     public <T> List<T> getAgents(final String url) {
         try {
             final ResponseEntity<List<T>> response = getRestTemplate(directoryPath).exchange(
-                directoryPath + url, HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<T>>(){});
-                List<T> list = response.getBody();
-                return list;
+                    directoryPath + url, HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<T>>() {
+                    });
+            List<T> list = response.getBody();
+            return list;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

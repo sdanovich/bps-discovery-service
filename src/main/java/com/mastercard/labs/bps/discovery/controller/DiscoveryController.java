@@ -126,42 +126,40 @@ public class DiscoveryController {
 
     }
 
-    private <T> byte[] getDiscoveries(BoundMapperFacade<Discovery, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
+    private <T> String getDiscoveries(BoundMapperFacade<Discovery, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
         if (batchFile.getStatus() == BatchFile.STATUS.COMPLETE) {
             CsvMapper mapper = new CsvMapper();
             mapper.disable(SORT_PROPERTIES_ALPHABETICALLY);
             CsvSchema schema = mapper.schemaFor(model).withHeader();
-            byte[] isr = mapper.writer(schema)
+            return mapper.writer(schema)
                     .writeValueAsString(discoveryService.getDiscoveries(batchFile.getId()).stream().map(boundMapperFacade::map)
-                            .collect(Collectors.toList())).getBytes();
-            return isr;
+                            .collect(Collectors.toList()));
         } else {
             return null;
         }
     }
 
-    private <T> byte[] getRegistrations(BoundMapperFacade<Registration, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
+    private <T> String getRegistrations(BoundMapperFacade<Registration, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
         if (batchFile.getStatus() == BatchFile.STATUS.COMPLETE) {
             CsvMapper mapper = new CsvMapper();
             mapper.disable(SORT_PROPERTIES_ALPHABETICALLY);
             CsvSchema schema = mapper.schemaFor(model).withHeader();
-            byte[] isr = mapper.writer(schema)
+            return mapper.writer(schema)
                     .writeValueAsString(discoveryService.getRegistrations(batchFile.getId()).stream().map(boundMapperFacade::map)
-                            .collect(Collectors.toList())).getBytes();
-            return isr;
+                            .collect(Collectors.toList()));
         } else {
             return null;
         }
     }
 
-    private ResponseEntity getResponseEntity(BatchFile batchFile, byte[] isr) {
+    private ResponseEntity getResponseEntity(BatchFile batchFile, String isr) {
         if (isr == null) {
             return new ResponseEntity(new Link(null, "File is still processing.  Please check later"), HttpStatus.BAD_REQUEST);
         }
         HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentLength(isr.length);
-        respHeaders.setContentType(MediaType.parseMediaType("application/octet-stream"));
-        respHeaders.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        //espHeaders.setAccept(Collections.singletonList(MediaType.parseMediaType("application/text")));
+        //respHeaders.setAcceptCharset(Collections.singletonList(Charset.forName("UTF-8")));
+        respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         String newFileName = StringUtils.substringAfter(FilenameUtils.removeExtension(batchFile.getFileName()), ".")
                 + "_Results."
                 + FilenameUtils.getExtension(batchFile.getFileName());

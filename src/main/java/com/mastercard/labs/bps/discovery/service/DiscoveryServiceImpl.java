@@ -93,7 +93,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         COUNTRY(DiscoveryConst.COUNTRY, "^[a-zA-Z]{2}|[a-zA-Z]{3}$"),
         STATE(DiscoveryConst.STATE_PROVINCE, "^[a-zA-Z]{2}$"),
         ADDRESS_1(DiscoveryConst.ADDRESS_LINE_1, "([0-9a-zA-Z _\\-\\.,]+)"),
-        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "^(\\S)+.(\\S)+@bps$"),
+        COMPANY_NAME(DiscoveryConst.COMPANY_NAME, "^(\\s)$"),
         CITY(DiscoveryConst.CITY, "([a-zA-Z -\\.]+)");
 
         private String value;
@@ -109,18 +109,20 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         }
 
         public static boolean validate(Record record, BatchFile.ENTITY entity) {
+            boolean valid = true;
             if (record != null) {
-                return Pattern.compile(ADDRESS_1.regex).matcher(Optional.ofNullable(record.getAddress1()).orElse("")).matches() &
+                valid &=  Pattern.compile(ADDRESS_1.regex).matcher(Optional.ofNullable(record.getAddress1()).orElse("")).matches() &
                         Pattern.compile(ZIP.regex).matcher(Optional.ofNullable(record.getZip()).orElse("")).matches() &
                         Pattern.compile(COUNTRY.regex).matcher(Optional.ofNullable(record.getCountry()).orElse("")).matches() &
                         StringUtils.equalsAnyIgnoreCase(record.getCountry(), "US", "USA") ? Pattern.compile(STATE.regex).matcher(Optional.ofNullable(record.getState()).orElse("")).matches() : StringUtils.isBlank(record.getState()) &
                         Pattern.compile(COMPANY_NAME.regex).matcher(Optional.ofNullable(record.getCompanyName()).orElse("")).matches() &
                         Pattern.compile(CITY.regex).matcher(Optional.ofNullable(record.getCity()).orElse("")).matches();
-
+                 if(valid && record instanceof Registration) {
+                     valid &=StringUtils.isNotBlank(((Registration)record).getBpsId());
+                 }
             }
-            return true;
+            return valid;
         }
-
     }
 
     public List<DiscoveryTable> getBatches(Integer timeZone) {
