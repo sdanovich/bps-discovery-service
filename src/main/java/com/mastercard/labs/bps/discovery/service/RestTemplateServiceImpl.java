@@ -150,13 +150,8 @@ public class RestTemplateServiceImpl {
 
         } catch (HttpClientErrorException e) {
             log.error(e.getMessage(), e);
-            try {
-                GlobalExceptionHandler.ErrorData errorData = jacksonObjectMapper.readValue(e.getResponseBodyAsString(), GlobalExceptionHandler.ErrorData.class);
-                throw new ExecutionException(errorData.getMessages());
-            } catch (IOException e1) {
-                log.error(e1.getMessage(), e1);
-                throw new ExecutionException(e1.getMessage());
-            }
+            GlobalExceptionHandler.ErrorData errorData = GlobalExceptionHandler.getErrorData(e, jacksonObjectMapper);
+            throw new ExecutionException(errorData.getMessages());
         } catch (UnsupportedEncodingException e) {
             throw new ExecutionException(e.getMessage());
         }
@@ -182,11 +177,11 @@ public class RestTemplateServiceImpl {
                 }).filter(Objects::nonNull).collect(Collectors.toList());
 
             }
+            return Collections.emptyList();
 
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+        } catch (HttpClientErrorException e) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     public <T> List<T> getAgents(final String url) {

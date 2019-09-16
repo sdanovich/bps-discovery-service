@@ -1,6 +1,9 @@
 package com.mastercard.labs.bps.discovery.configuration;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,18 +12,29 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitConfiguration {
 
     @Value("${event.discovery.exchange}")
-    private String discoveryExchange;
+    private String discoveryExchangeStr;
     @Value("${event.discovery.queue}")
     private String discoveryQueueName;
     @Value("${event.discovery.routing}")
     private String discoveryRouting;
     @Value("${event.registration.exchange}")
-    private String registrationExchange;
+    private String registrationExchangeStr;
     @Value("${event.registration.queue}")
     private String registrationQueueName;
     @Value("${event.registration.routing}")
     private String registrationRouting;
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(rabbitTemplate.getConnectionFactory());
+        factory.setConcurrentConsumers(3);
+        factory.setMaxConcurrentConsumers(10);
+        return factory;
+    }
 
     @Bean
     public Queue discoveryQueue() {
@@ -34,7 +48,7 @@ public class RabbitConfiguration {
 
     @Bean
     public Exchange discoveryExchange() {
-        return ExchangeBuilder.topicExchange(discoveryExchange).build();
+        return ExchangeBuilder.topicExchange(discoveryExchangeStr).build();
     }
 
     @Bean
@@ -55,7 +69,7 @@ public class RabbitConfiguration {
 
     @Bean
     public Exchange registrationExchange() {
-        return ExchangeBuilder.topicExchange(registrationExchange).build();
+        return ExchangeBuilder.topicExchange(registrationExchangeStr).build();
     }
 
     @Bean

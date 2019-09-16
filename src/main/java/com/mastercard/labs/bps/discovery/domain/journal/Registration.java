@@ -36,6 +36,7 @@ public class Registration extends BpsEntity implements Record {
     private String taxId;
     private String dbId;
     private String trackId;
+    @Column(columnDefinition = "TEXT")
     private String confidence;
     private String reason;
     @Enumerated(EnumType.STRING)

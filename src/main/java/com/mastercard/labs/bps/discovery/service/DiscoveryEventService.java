@@ -1,15 +1,17 @@
 package com.mastercard.labs.bps.discovery.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerEndpoint;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class DiscoveryEventService {
+public class DiscoveryEventService implements RabbitListenerConfigurer {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -23,9 +25,17 @@ public class DiscoveryEventService {
         this.rabbitTemplate.convertAndSend(queueName, discoveryId);
     }
 
-    @RabbitListener(queues = "${event.discovery.queue}", concurrency = "4")
-    public void processDiscovery(String discoveryId) {
-        log.info("Discovery Received: " + discoveryId);
-        discoveryService.persistDiscovery(discoveryId);
+    @Override
+    public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
+        SimpleRabbitListenerEndpoint endpoint = new SimpleRabbitListenerEndpoint();
+        endpoint.setId("DiscoveryEventService");
+        endpoint.setConcurrency("3");
+        endpoint.setQueueNames(queueName);
+        endpoint.setMessageListener(message -> {
+            log.info("Discovery Received: " + new String(message.getBody()));
+            discoveryService.persistDiscovery(new String(message.getBody()));
+        });
+        registrar.registerEndpoint(endpoint);
     }
+
 }
