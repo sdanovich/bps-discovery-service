@@ -31,35 +31,7 @@ Vue.component('modal4', {
         }
     }
 });
-// start app
-new Vue({
-        el: '#uploadBPADiscovery',
-        data: {
-            showModal: false
-        }
-    }
-);
-new Vue({
-        el: '#uploadSPADiscovery',
-        data: {
-            showModal: false
-        }
-    }
-);
-new Vue({
-        el: '#uploadBPARegister',
-        data: {
-            showModal: false
-        }
-    }
-);
-new Vue({
-        el: '#uploadSPARegister',
-        data: {
-            showModal: false
-        }
-    }
-);
+
 
 function processFileSubmission(e) {
     const formData = new FormData();

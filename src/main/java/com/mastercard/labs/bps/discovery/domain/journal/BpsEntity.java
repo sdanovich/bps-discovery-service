@@ -11,7 +11,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 
 
@@ -29,8 +28,5 @@ public class BpsEntity {
     protected String lastModifiedBy;
     @LastModifiedDate
     protected LocalDateTime lastModifiedDate;
-    @Version
-    int version;
-
 
 }

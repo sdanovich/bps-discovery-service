@@ -1,5 +1,6 @@
 package com.mastercard.labs.bps;
 
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
@@ -15,6 +16,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @EnableJpaAuditing
 @EnableScheduling
+@EnableRabbit
 @EnableAsync
 @ComponentScan(basePackages = {
         "com.mastercard.labs.bps.discovery.persistence.support",

@@ -669,86 +669,6 @@ class LinkDetails implements Serializable {
 
 }
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-        "registeredBusinessData",
-        "creditRiskData",
-        "revenueData",
-        "corporateHierarchyData",
-        "verificationData",
-        "executivesData",
-        "complianceData"
-})
-@Getter
-@Setter
-class MatchDatum implements Serializable {
-
-    @JsonProperty("registeredBusinessData")
-    private RegisteredBusinessData registeredBusinessData;
-    @JsonProperty("creditRiskData")
-    private CreditRiskData creditRiskData;
-    @JsonProperty("revenueData")
-    private RevenueData revenueData;
-    @JsonProperty("corporateHierarchyData")
-    private CorporateHierarchyData corporateHierarchyData;
-    @JsonProperty("verificationData")
-    private VerificationData verificationData;
-    @JsonProperty("executivesData")
-    private ExecutivesData executivesData;
-    @JsonProperty("complianceData")
-    private ComplianceData complianceData;
-    private final static long serialVersionUID = 1740614548591164497L;
-
-    /**
-     * No args constructor for use in serialization
-     */
-    public MatchDatum() {
-    }
-
-    /**
-     * @param corporateHierarchyData
-     * @param registeredBusinessData
-     * @param complianceData
-     * @param executivesData
-     * @param verificationData
-     * @param creditRiskData
-     * @param revenueData
-     */
-    public MatchDatum(RegisteredBusinessData registeredBusinessData, CreditRiskData creditRiskData, RevenueData revenueData, CorporateHierarchyData corporateHierarchyData, VerificationData verificationData, ExecutivesData executivesData, ComplianceData complianceData) {
-        super();
-        this.registeredBusinessData = registeredBusinessData;
-        this.creditRiskData = creditRiskData;
-        this.revenueData = revenueData;
-        this.corporateHierarchyData = corporateHierarchyData;
-        this.verificationData = verificationData;
-        this.executivesData = executivesData;
-        this.complianceData = complianceData;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this).append("registeredBusinessData", registeredBusinessData).append("creditRiskData", creditRiskData).append("revenueData", revenueData).append("corporateHierarchyData", corporateHierarchyData).append("verificationData", verificationData).append("executivesData", executivesData).append("complianceData", complianceData).toString();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(corporateHierarchyData).append(registeredBusinessData).append(complianceData).append(executivesData).append(verificationData).append(creditRiskData).append(revenueData).toHashCode();
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-        if ((other instanceof MatchDatum) == false) {
-            return false;
-        }
-        MatchDatum rhs = ((MatchDatum) other);
-        return new EqualsBuilder().append(corporateHierarchyData, rhs.corporateHierarchyData).append(registeredBusinessData, rhs.registeredBusinessData).append(complianceData, rhs.complianceData).append(executivesData, rhs.executivesData).append(verificationData, rhs.verificationData).append(creditRiskData, rhs.creditRiskData).append(revenueData, rhs.revenueData).isEquals();
-    }
-
-}
-
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -886,90 +806,6 @@ class Naics implements Serializable {
         }
         Naics rhs = ((Naics) other);
         return new EqualsBuilder().append(secondaryCode, rhs.secondaryCode).append(secondaryClassification, rhs.secondaryClassification).append(primaryClassification, rhs.primaryClassification).append(primaryCode, rhs.primaryCode).isEquals();
-    }
-
-}
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-        "trackId",
-        "profileLink",
-        "businessName",
-        "address",
-        "phone",
-        "status",
-        "url",
-        "tin",
-        "vat",
-        "registrationNumber",
-        "operationStartDate",
-        "registrationDate",
-        "businessClassification",
-        "businessDescription",
-        "employeesData",
-        "locationType"
-})
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-class RegisteredBusinessData implements Serializable {
-
-    @JsonProperty("trackId")
-    private String trackId;
-    @JsonProperty("profileLink")
-    private String profileLink;
-    @JsonProperty("businessName")
-    private String businessName;
-    @JsonProperty("address")
-    private TrackResponseModel.Address address;
-    @JsonProperty("phone")
-    private Object phone;
-    @JsonProperty("status")
-    private String status;
-    @JsonProperty("url")
-    private String url;
-    @JsonProperty("tin")
-    private Object tin;
-    @JsonProperty("vat")
-    private Object vat;
-    @JsonProperty("registrationNumber")
-    private Object registrationNumber;
-    @JsonProperty("operationStartDate")
-    private String operationStartDate;
-    @JsonProperty("registrationDate")
-    private Object registrationDate;
-    @JsonProperty("businessClassification")
-    private BusinessClassification businessClassification;
-    @JsonProperty("businessDescription")
-    private Object businessDescription;
-    @JsonProperty("employeesData")
-    private EmployeesData employeesData;
-    @JsonProperty("locationType")
-    private String locationType;
-    private final static long serialVersionUID = -9222608833176745231L;
-
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this).append("trackId", trackId).append("profileLink", profileLink).append("businessName", businessName).append("address", address).append("phone", phone).append("status", status).append("url", url).append("tin", tin).append("vat", vat).append("registrationNumber", registrationNumber).append("operationStartDate", operationStartDate).append("registrationDate", registrationDate).append("businessClassification", businessClassification).append("businessDescription", businessDescription).append("employeesData", employeesData).append("locationType", locationType).toString();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(operationStartDate).append(businessName).append(phone).append(trackId).append(employeesData).append(status).append(vat).append(businessDescription).append(tin).append(profileLink).append(url).append(registrationNumber).append(registrationDate).append(businessClassification).append(address).append(locationType).toHashCode();
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-        if ((other instanceof RegisteredBusinessData) == false) {
-            return false;
-        }
-        RegisteredBusinessData rhs = ((RegisteredBusinessData) other);
-        return new EqualsBuilder().append(operationStartDate, rhs.operationStartDate).append(businessName, rhs.businessName).append(phone, rhs.phone).append(trackId, rhs.trackId).append(employeesData, rhs.employeesData).append(status, rhs.status).append(vat, rhs.vat).append(businessDescription, rhs.businessDescription).append(tin, rhs.tin).append(profileLink, rhs.profileLink).append(url, rhs.url).append(registrationNumber, rhs.registrationNumber).append(registrationDate, rhs.registrationDate).append(businessClassification, rhs.businessClassification).append(address, rhs.address).append(locationType, rhs.locationType).isEquals();
     }
 
 }
@@ -1204,6 +1040,73 @@ public class TrackResponseModel implements Serializable {
         TrackResponseModel rhs = ((TrackResponseModel) other);
         return new EqualsBuilder().append(statusCode, rhs.statusCode).append(result, rhs.result).append(responseHeader, rhs.responseHeader).append(status, rhs.status).append(responseDetail, rhs.responseDetail).isEquals();
     }
+
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RegisteredBusinessData implements Serializable {
+
+        @JsonProperty("trackId")
+        private String trackId;
+        @JsonProperty("profileLink")
+        private String profileLink;
+        @JsonProperty("businessName")
+        private String businessName;
+        @JsonProperty("address")
+        private TrackResponseModel.Address address;
+        @JsonProperty("phone")
+        private Object phone;
+        @JsonProperty("status")
+        private String status;
+        @JsonProperty("url")
+        private String url;
+        @JsonProperty("tin")
+        private Object tin;
+        @JsonProperty("vat")
+        private Object vat;
+        @JsonProperty("registrationNumber")
+        private Object registrationNumber;
+        @JsonProperty("operationStartDate")
+        private String operationStartDate;
+        @JsonProperty("registrationDate")
+        private Object registrationDate;
+        @JsonProperty("businessClassification")
+        private BusinessClassification businessClassification;
+        @JsonProperty("businessDescription")
+        private Object businessDescription;
+        @JsonProperty("employeesData")
+        private EmployeesData employeesData;
+        @JsonProperty("locationType")
+        private String locationType;
+        private final static long serialVersionUID = -9222608833176745231L;
+
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this).append("trackId", trackId).append("profileLink", profileLink).append("businessName", businessName).append("address", address).append("phone", phone).append("status", status).append("url", url).append("tin", tin).append("vat", vat).append("registrationNumber", registrationNumber).append("operationStartDate", operationStartDate).append("registrationDate", registrationDate).append("businessClassification", businessClassification).append("businessDescription", businessDescription).append("employeesData", employeesData).append("locationType", locationType).toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(operationStartDate).append(businessName).append(phone).append(trackId).append(employeesData).append(status).append(vat).append(businessDescription).append(tin).append(profileLink).append(url).append(registrationNumber).append(registrationDate).append(businessClassification).append(address).append(locationType).toHashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+            if ((other instanceof RegisteredBusinessData) == false) {
+                return false;
+            }
+            RegisteredBusinessData rhs = ((RegisteredBusinessData) other);
+            return new EqualsBuilder().append(operationStartDate, rhs.operationStartDate).append(businessName, rhs.businessName).append(phone, rhs.phone).append(trackId, rhs.trackId).append(employeesData, rhs.employeesData).append(status, rhs.status).append(vat, rhs.vat).append(businessDescription, rhs.businessDescription).append(tin, rhs.tin).append(profileLink, rhs.profileLink).append(url, rhs.url).append(registrationNumber, rhs.registrationNumber).append(registrationDate, rhs.registrationDate).append(businessClassification, rhs.businessClassification).append(address, rhs.address).append(locationType, rhs.locationType).isEquals();
+        }
+
+    }
+
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonPropertyOrder({
@@ -1481,6 +1384,87 @@ public class TrackResponseModel implements Serializable {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonPropertyOrder({
+            "registeredBusinessData",
+            "creditRiskData",
+            "revenueData",
+            "corporateHierarchyData",
+            "verificationData",
+            "executivesData",
+            "complianceData"
+    })
+    @Getter
+    @Setter
+    public static class MatchDatum implements Serializable {
+
+        @JsonProperty("registeredBusinessData")
+        private TrackResponseModel.RegisteredBusinessData registeredBusinessData;
+        @JsonProperty("creditRiskData")
+        private CreditRiskData creditRiskData;
+        @JsonProperty("revenueData")
+        private RevenueData revenueData;
+        @JsonProperty("corporateHierarchyData")
+        private CorporateHierarchyData corporateHierarchyData;
+        @JsonProperty("verificationData")
+        private VerificationData verificationData;
+        @JsonProperty("executivesData")
+        private ExecutivesData executivesData;
+        @JsonProperty("complianceData")
+        private ComplianceData complianceData;
+        private final static long serialVersionUID = 1740614548591164497L;
+
+        /**
+         * No args constructor for use in serialization
+         */
+        public MatchDatum() {
+        }
+
+        /**
+         * @param corporateHierarchyData
+         * @param registeredBusinessData
+         * @param complianceData
+         * @param executivesData
+         * @param verificationData
+         * @param creditRiskData
+         * @param revenueData
+         */
+        public MatchDatum(TrackResponseModel.RegisteredBusinessData registeredBusinessData, CreditRiskData creditRiskData, RevenueData revenueData, CorporateHierarchyData corporateHierarchyData, VerificationData verificationData, ExecutivesData executivesData, ComplianceData complianceData) {
+            super();
+            this.registeredBusinessData = registeredBusinessData;
+            this.creditRiskData = creditRiskData;
+            this.revenueData = revenueData;
+            this.corporateHierarchyData = corporateHierarchyData;
+            this.verificationData = verificationData;
+            this.executivesData = executivesData;
+            this.complianceData = complianceData;
+        }
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this).append("registeredBusinessData", registeredBusinessData).append("creditRiskData", creditRiskData).append("revenueData", revenueData).append("corporateHierarchyData", corporateHierarchyData).append("verificationData", verificationData).append("executivesData", executivesData).append("complianceData", complianceData).toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(corporateHierarchyData).append(registeredBusinessData).append(complianceData).append(executivesData).append(verificationData).append(creditRiskData).append(revenueData).toHashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) {
+                return true;
+            }
+            if ((other instanceof MatchDatum) == false) {
+                return false;
+            }
+            MatchDatum rhs = ((MatchDatum) other);
+            return new EqualsBuilder().append(corporateHierarchyData, rhs.corporateHierarchyData).append(registeredBusinessData, rhs.registeredBusinessData).append(complianceData, rhs.complianceData).append(executivesData, rhs.executivesData).append(verificationData, rhs.verificationData).append(creditRiskData, rhs.creditRiskData).append(revenueData, rhs.revenueData).isEquals();
+        }
+
+    }
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonPropertyOrder({
             "matchPercentage"
     })
     @Getter
@@ -1489,7 +1473,7 @@ public class TrackResponseModel implements Serializable {
     public static class MatchScoreData implements Serializable {
 
         @JsonProperty("matchPercentage")
-        private Integer matchPercentage;
+        private Double matchPercentage;
         private final static long serialVersionUID = -4439745066501635988L;
 
 
@@ -1627,6 +1611,8 @@ class VerificationDetails implements Serializable {
         return new EqualsBuilder().append(verificationDate, rhs.verificationDate).append(verificationStatus, rhs.verificationStatus).isEquals();
     }
 
+
 }
+
 
 

@@ -22,8 +22,24 @@ crypto-service-client:
   caasv1:
     endpoint: ${CAASV1_ENDPOINT}
     hashSalt: ${CAASV1_HASH_SALT}
+# Message Queue specific configs for discovery
+event:
+  discovery:
+    exchange: discovery-exchange
+    queue:  discovery-queue
+    routing:  discovery-routing-key
+
+  registration:
+    exchange: registartion-exchange
+    queue: registration-queue
+    routing:  registration-routing-key
 
 spring:
+  rabbitmq:
+    host: ${AMQP_SERVER_ADDRESS}
+    port: ${AMQP_SERVER_PORT}
+    username: ${AMQP_SERVER_USER}
+    password: ${AMQP_SERVER_PASS}
   profiles:
     include: caas
   main:
@@ -90,6 +106,10 @@ directory:
     supplierByTrackId: /company/track/{trackid}/suppliers
     suppliersByTaxId: /company/{taxid}/suppliers
     buyerByTrackId: /company/track/{trackid}/buyers
+    companyByTrackId: /company/track/{trackid}
+    registerBuyer: /registration/buyers
+    registerSupplier: /registration/suppliers
+    agentList: /agents
 
 webhook:
   tolerance: 60

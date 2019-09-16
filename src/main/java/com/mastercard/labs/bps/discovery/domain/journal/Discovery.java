@@ -12,7 +12,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(schema = "journal")
-public class Discovery extends BpsEntity {
+public class Discovery extends BpsEntity implements Record {
 
     public enum STATUS {
         READY,
@@ -31,21 +31,21 @@ public class Discovery extends BpsEntity {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     private String id;
     private String batchId;
-    private String companyName;
-    private String address1;
-    private String address2;
-    private String address3;
-    private String address4;
-    private String city;
-    private String state;
-    private String country;
-    private String zip;
-    private String taxId;
-    private String dbId;
-    private String trackId;
-    private String confidence;
     @Enumerated(EnumType.STRING)
     private EXISTS bpsPresent;
+    String companyName;
+    String address1;
+    String address2;
+    String address3;
+    String address4;
+    String city;
+    String state;
+    String country;
+    String zip;
+    String taxId;
+    String dbId;
+    String trackId;
+    String confidence;
     private Integer rating;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

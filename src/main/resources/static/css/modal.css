@@ -3,7 +3,7 @@ modal-mask {
     z-index: 9998;
     top: 0;
     left: 0;
-    width: 100%;
+    width: fit-content;
     height: 100%;
     background-color: rgba(0, 0, 0, .5);
     display: table;
@@ -16,7 +16,7 @@ modal-mask {
 }
 
 .modal-container {
-    width: 300px;
+    width: fit-content;
     margin: 0px auto;
     padding: 20px 30px;
     background-color: #fff;
@@ -77,10 +77,36 @@ modal-mask {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
 }
-#block_container > div {
+#block_container > div > fieldset > div {
     display: inline-block;
 }
-#uploadBPADiscovery, #uploadSPADiscovery, #uploadBPARegister, #uploadSPARegister
-{
-    display:inline;
+#block_container > div  {
+    display: inline-table;
+    width: auto;
+}
+
+#border1  {
+    display: inline-block;
+    height:100px;
+    width:400px;
+}
+#border2  {
+    display: inline-block;
+    height:100px;
+    width:700px;
+}
+
+
+.agent-control {
+    font-size: 15px;
+    overflow: auto;
+    padding-top: 15px;
+    height: 54px;
+    text-indent: 6px;
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 0 0 10px #E8E8E8 inset;
+    margin: 0 0 0 0;
+    width: 172px;
 }

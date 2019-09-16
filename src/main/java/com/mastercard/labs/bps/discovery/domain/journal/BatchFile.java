@@ -18,7 +18,8 @@ public class BatchFile extends BpsEntity {
     public enum STATUS {
         RECEIVED,
         PROCESSING,
-        COMPLETE
+        COMPLETE,
+        INVALID_FILE
     }
 
     public enum TYPE {
@@ -57,6 +58,7 @@ public class BatchFile extends BpsEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private STATUS status;
+    private String agentName;
 
     public BatchFile withStatus(STATUS status) {
         setStatus(status);

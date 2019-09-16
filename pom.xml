@@ -10,7 +10,7 @@
     <groupId>com.mastercard.mclabs.bps</groupId>
     <artifactId>bps-discovery-service</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.28</version>
+    <version>0.0.29</version>
     <name>BPS DISCOVERY UI</name>
     <description>B2B Discovery Service REST API and UI</description>
 
@@ -92,6 +92,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
         <!-- Cryptography -->
