@@ -198,14 +198,14 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                                 record.setConfidence("PARTIALCONFIDENCE");
                             }
                             record.setFound((2 == rating) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
-                            if (record.getFound() == Discovery.EXISTS.Y) {
+                            //if (record.getFound() == Discovery.EXISTS.Y) {
                                 if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
                                     if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
                                         ((Discovery) record).setBpsPresent(isBpsPresent((Discovery) record, pathToBuyer, BuyerAgent.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                     } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
                                         ((Discovery) record).setBpsPresent(isBpsPresent((Discovery) record, pathToSupplier, Supplier.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                                     }
-                                }
+                                //}
                             }
                         } else {
                             record.setFound(Discovery.EXISTS.N);
