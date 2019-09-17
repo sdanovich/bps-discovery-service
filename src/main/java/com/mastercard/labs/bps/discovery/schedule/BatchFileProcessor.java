@@ -5,31 +5,25 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery.STATUS;
-import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
-import com.mastercard.labs.bps.discovery.exceptions.ExecutionException;
-import com.mastercard.labs.bps.discovery.exceptions.ValidationException;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
 import com.mastercard.labs.bps.discovery.service.DiscoveryEventService;
-import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
 import com.mastercard.labs.bps.discovery.service.RegistrationEventService;
-import com.mastercard.labs.bps.discovery.service.RestTemplateServiceImpl;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
-import com.mastercard.labs.bps.discovery.webhook.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.mastercard.labs.bps.discovery.domain.journal.BatchFile.STATUS.*;
 
@@ -51,12 +45,6 @@ public class BatchFileProcessor {
     private PooledPBEByteEncryptor byteEncryptor;
 
     @Autowired
-    private RestTemplateServiceImpl restTemplateService;
-
-    @Autowired
-    private DiscoveryServiceImpl discoveryService;
-
-    @Autowired
     private DiscoveryEventService discoveryEventService;
 
     @Autowired
@@ -67,7 +55,7 @@ public class BatchFileProcessor {
     private char delimiter;
 
 
-    @Scheduled(fixedRate = 1000 * 20)
+    @Scheduled(fixedRate = 1000 * 2)
     public void process() {
         batchFileRepository.findByStatus(RECEIVED).orElse(Collections.emptySet()).parallelStream().filter(Objects::nonNull).forEach(batchFile -> {
             try {
@@ -80,7 +68,7 @@ public class BatchFileProcessor {
         });
     }
 
-    @Scheduled(fixedRate = 1000 * 20)
+    @Scheduled(fixedRate = 1000 * 2)
     public void updateStatus() {
         batchFileRepository.findAllProcessedDiscoveryBatches().stream().filter(Objects::nonNull).forEach(batchFile -> {
             try {

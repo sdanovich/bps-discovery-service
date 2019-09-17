@@ -45,6 +45,7 @@ public class Discovery extends BpsEntity implements Record {
     String taxId;
     String dbId;
     String trackId;
+    @Column(columnDefinition = "TEXT")
     String confidence;
     private Integer rating;
     @Enumerated(EnumType.STRING)

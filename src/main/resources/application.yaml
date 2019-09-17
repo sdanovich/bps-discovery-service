@@ -63,11 +63,11 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
   datasource:
     hikari:
-      connection-timeout: 300
-      idle-timeout: 60000
+      connection-timeout: 30000
+      idle-timeout: 600000
       minimum-idle: 2
-      max-lifetime: 60000
-      maximum-pool-size: 10
+      max-lifetime: 1800000
+      maximum-pool-size: 20
     password: bps!2345
     username: bpsservice
   resources:

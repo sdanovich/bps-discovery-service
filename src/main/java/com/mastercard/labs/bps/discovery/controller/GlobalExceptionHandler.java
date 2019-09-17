@@ -1,6 +1,7 @@
 package com.mastercard.labs.bps.discovery.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.mastercard.labs.bps.discovery.exceptions.ResourceNotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -80,6 +82,14 @@ public class GlobalExceptionHandler {
      */
     private ResponseEntity<ErrorData> handleExceptionInternal(HttpStatus status, String... messages) {
         return new ResponseEntity<>(new ErrorData(status, messages), headers, status);
+    }
+
+    public static ErrorData getErrorData(HttpClientErrorException e, ObjectMapper jacksonObjectMapper) {
+        try {
+            return jacksonObjectMapper.readValue(e.getResponseBodyAsString(), ErrorData.class);
+        } catch (IOException e1) {
+            return new ErrorData();
+        }
     }
 
     @Getter

@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -54,7 +55,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private PooledPBEByteEncryptor byteEncryptor;
     @Value("${discovery.delimiter}")
     private char delimiter;
-
+    @Autowired
+    private Environment environment;
     @Value("${directory.supplierByTrackId}")
     private String pathToSupplier;
 
@@ -111,15 +113,15 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         public static boolean validate(Record record, BatchFile.ENTITY entity) {
             boolean valid = true;
             if (record != null) {
-                valid &=  Pattern.compile(ADDRESS_1.regex).matcher(Optional.ofNullable(record.getAddress1()).orElse("")).matches() &
+                valid &= Pattern.compile(ADDRESS_1.regex).matcher(Optional.ofNullable(record.getAddress1()).orElse("")).matches() &
                         Pattern.compile(ZIP.regex).matcher(Optional.ofNullable(record.getZip()).orElse("")).matches() &
                         Pattern.compile(COUNTRY.regex).matcher(Optional.ofNullable(record.getCountry()).orElse("")).matches() &
                         StringUtils.equalsAnyIgnoreCase(record.getCountry(), "US", "USA") ? Pattern.compile(STATE.regex).matcher(Optional.ofNullable(record.getState()).orElse("")).matches() : StringUtils.isBlank(record.getState()) &
                         Pattern.compile(COMPANY_NAME.regex).matcher(Optional.ofNullable(record.getCompanyName()).orElse("")).matches() &
                         Pattern.compile(CITY.regex).matcher(Optional.ofNullable(record.getCity()).orElse("")).matches();
-                 if(valid && record instanceof Registration) {
-                     valid &=StringUtils.isNotBlank(((Registration)record).getBpsId());
-                 }
+                if (valid && record instanceof Registration) {
+                    valid &= StringUtils.isNotBlank(((Registration) record).getBpsId());
+                }
             }
             return valid;
         }
@@ -168,29 +170,31 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     public Record persistRecord(BatchFile batchFile, Record record) {
+        ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity = null;
+        Double rating = 0.0;
         try {
             if (batchFile.getType() == BatchFile.TYPE.REGISTRATION && !isDiscoveryValid(record, batchFile.getEntityType())) {
                 record.setReason("Registration Error - Missing required fields");
                 record.setStatus(Discovery.STATUS.FAILED);
                 throw new ValidationException(record.getReason());
             }
-            ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity = restTemplateService.callTrack(record).get();
+            trackResponseModelResponseEntity = restTemplateService.callTrack(record).get();
             if (trackResponseModelResponseEntity.getStatusCode().is2xxSuccessful()) {
                 record.setStatus(Discovery.STATUS.COMPLETE);
-                if (!CollectionUtils.isEmpty(trackResponseModelResponseEntity.getBody().getResponseDetail())) {
-                    List<TrackResponseModel.ResponseDetail> responseDetails = trackResponseModelResponseEntity.getBody().getResponseDetail();
+                if (!CollectionUtils.isEmpty(getResponseDetails(trackResponseModelResponseEntity))) {
+                    List<TrackResponseModel.ResponseDetail> responseDetails = getResponseDetails(trackResponseModelResponseEntity);
                     if (responseDetails.size() > 1) {
                         //TODO: error - cannot be multiple
                         record.setFound(Discovery.EXISTS.N);
                         record.setReason("ERROR: " + "Multiple results");
                     } else if (responseDetails.get(0).getMatchResults() != null && responseDetails.get(0).getMatchResults().getMatchScoreData() != null) {
                         record.setConfidence(responseDetails.get(0).getMatchResults().getMatchStatus());
-                        Double rating = responseDetails.get(0).getMatchResults().getMatchScoreData().getMatchPercentage();
+                        rating = responseDetails.get(0).getMatchResults().getMatchScoreData().getMatchPercentage();
                         if (!CollectionUtils.isEmpty(responseDetails.get(0).getMatchData())) {
-                            record.setTrackId(responseDetails.get(0).getMatchData().get(0).getRegisteredBusinessData().getTrackId());
+                            record.setTrackId(getRegisteredBusinessData(responseDetails).getTrackId());
                         }
                         if (rating != null) {
-                            if(batchFile.getType() == BatchFile.TYPE.REGISTRATION && StringUtils.equalsIgnoreCase(record.getConfidence(), "HIGHCONFIDENCE") && rating != 2) {
+                            if (batchFile.getType() == BatchFile.TYPE.REGISTRATION && StringUtils.equalsIgnoreCase(record.getConfidence(), "HIGHCONFIDENCE") && rating != 2) {
                                 record.setConfidence("PARTIALCONFIDENCE");
                             }
                             record.setFound((2 == rating) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
@@ -226,11 +230,37 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
-        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
+        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModelResponseEntity, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModelResponseEntity, rating));
+    }
+
+    private List<TrackResponseModel.ResponseDetail> getResponseDetails(ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity) {
+        return Optional.ofNullable(trackResponseModelResponseEntity.getBody()).orElse(new TrackResponseModel()).getResponseDetail();
+    }
+
+    private <T extends Record> Record enrich(Record record, ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity, Double rating) {
+        if (Stream.of(environment.getActiveProfiles()).anyMatch(p -> StringUtils.containsAny(p, "debug", "dev"))) {
+            TrackResponseModel.RegisteredBusinessData registeredBusinessData = getRegisteredBusinessData(getResponseDetails(trackResponseModelResponseEntity));
+            if (registeredBusinessData != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("score=" + rating + ",");
+                sb.append("trackId=" + registeredBusinessData.getTrackId() + ",");
+                sb.append("trackName=" + registeredBusinessData.getBusinessName() + ",");
+                sb.append("trackAddress=" + registeredBusinessData.getAddress().getStreetAddress() + ",");
+                sb.append("trackCity=" + registeredBusinessData.getAddress().getState() + ",");
+                sb.append("trackState=" + registeredBusinessData.getAddress().getState() + ",");
+                sb.append("trackZip=" + registeredBusinessData.getAddress().getZip());
+                record.setConfidence(record.getConfidence() + " " + sb.toString());
+            }
+        }
+        return record;
+    }
+
+    private TrackResponseModel.RegisteredBusinessData getRegisteredBusinessData(List<TrackResponseModel.ResponseDetail> responseDetails) {
+        return CollectionUtils.isEmpty(responseDetails) ? null : CollectionUtils.isEmpty(responseDetails.get(0).getMatchData()) ? null : responseDetails.get(0).getMatchData().get(0).getRegisteredBusinessData();
     }
 
     private <T> boolean isBpsPresent(Discovery discovery, String path, Class<T> clazz) {
-        return !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", discovery.getTrackId()), clazz).orElse(Collections.emptyList()).isEmpty();
+        return !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", StringUtils.trim(discovery.getTrackId())), clazz).orElse(Collections.emptyList()).isEmpty();
     }
 
 

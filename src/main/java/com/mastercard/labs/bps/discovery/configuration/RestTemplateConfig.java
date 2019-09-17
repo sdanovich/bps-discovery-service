@@ -1,5 +1,7 @@
 package com.mastercard.labs.bps.discovery.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -8,29 +10,35 @@ import org.apache.http.ssl.TrustStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 
 @Configuration
+@Slf4j
 public class RestTemplateConfig {
 
     @Autowired
     CloseableHttpClient httpClient;
 
+
+    @Autowired
+    private ObjectMapper jacksonObjectMapper;
+
+
     @Bean
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
-        return restTemplate;
+        return wrap(restTemplate);
     }
 
     @Bean
@@ -56,7 +64,22 @@ public class RestTemplateConfig {
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
-        return (new RestTemplate(requestFactory));
+        return wrap(new RestTemplate(requestFactory));
+    }
+
+    private RestTemplate wrap(RestTemplate restTemplate) {
+        restTemplate.setErrorHandler(new ResponseErrorHandler() {
+            @Override
+            public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
+                return !clientHttpResponse.getStatusCode().is2xxSuccessful();
+            }
+
+            @Override
+            public void handleError(ClientHttpResponse clientHttpResponse) throws IOException {
+                log.error(clientHttpResponse.getStatusText());
+            }
+        });
+        return restTemplate;
     }
 
 

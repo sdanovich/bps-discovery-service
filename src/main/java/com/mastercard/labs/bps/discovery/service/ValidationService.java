@@ -8,13 +8,13 @@ import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -236,7 +236,7 @@ public class ValidationService {
             b.setState(a.getState());
             b.setZip(a.getZip());
             b.setCountry(a.getCountry());
-            Stream<String> ids = restTemplateService.getCompaniesFromDirectory(org.apache.commons.lang3.StringUtils.replace(pathToSuppliersByTaxId, "{taxid}", a.getTaxId()), SupplierAgent.class).stream().map(SupplierAgent::getBpsId);
+            Stream<String> ids = restTemplateService.getCompaniesFromDirectory(StringUtils.replace(pathToSuppliersByTaxId, "{taxid}", StringUtils.trim(a.getTaxId())), SupplierAgent.class).stream().map(SupplierAgent::getBpsId);
             b.setRestriction(isRuleRestricted(ids) ? "Y" : "N");
             b.setBpsAvailable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
             b.setConfidence(a.getReason() != null ? a.getReason() : a.getConfidence());

@@ -1296,6 +1296,8 @@ public class TrackResponseModel implements Serializable {
     @NoArgsConstructor
     public static class Address implements Serializable {
 
+        @JsonProperty("streetAddress")
+        private String streetAddress;
         @JsonProperty("address1")
         private String address1;
         @JsonProperty("address2")
