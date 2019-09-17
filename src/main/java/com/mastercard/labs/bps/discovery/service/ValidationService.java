@@ -236,7 +236,7 @@ public class ValidationService {
             b.setState(a.getState());
             b.setZip(a.getZip());
             b.setCountry(a.getCountry());
-            Stream<String> ids = restTemplateService.getCompaniesFromDirectory(StringUtils.replace(pathToSuppliersByTaxId, "{taxid}", StringUtils.trim(a.getTaxId())), SupplierAgent.class).stream().map(SupplierAgent::getBpsId);
+            Stream<String> ids = restTemplateService.getCompaniesFromDirectory(StringUtils.replace(pathToSuppliersByTaxId, "{taxid}", a.getTaxId() == null ? "0" : StringUtils.trim(a.getTaxId())), SupplierAgent.class).stream().map(SupplierAgent::getBpsId);
             b.setRestriction(isRuleRestricted(ids) ? "Y" : "N");
             b.setBpsAvailable(((Discovery) a).getBpsPresent() != null ? ((Discovery) a).getBpsPresent().name() : "N");
             b.setConfidence(a.getReason() != null ? a.getReason() : a.getConfidence());

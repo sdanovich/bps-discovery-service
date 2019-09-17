@@ -24,6 +24,7 @@ crypto-service-client:
     hashSalt: ${CAASV1_HASH_SALT}
 # Message Queue specific configs for discovery
 event:
+  concurrency: ${AMQP_CONCURRENCY}
   discovery:
     exchange: discovery-exchange
     queue:  discovery-queue

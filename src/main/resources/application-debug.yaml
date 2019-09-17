@@ -48,6 +48,9 @@ track:
   post:
     singleVendorDetail: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
 
+event:
+  concurrency: 6
+
 journal:
   datasource:
     url: jdbc:postgresql://localhost:9981/bps?currentSchema=journal&ApplicationName=bpsservice-directorydebug

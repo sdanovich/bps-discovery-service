@@ -39,6 +39,9 @@ track:
 webhook:
   secretKey: v7aJHjbbxASKiwDW5wq6
 
+event:
+   concurrency: 6
+
 discovery:
   delimiter: "|"
   businessId: "US2017000000000"

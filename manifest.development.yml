@@ -49,6 +49,7 @@ applications:
     AMQP_SERVER_PORT: 9975
     AMQP_SERVER_USER: guest
     AMQP_SERVER_PASS: guest
+    AMQP_CONCURRENCY: 4
   buildpacks:
   - java_buildpack_offline
 

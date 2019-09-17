@@ -23,6 +23,8 @@ public class RabbitConfiguration {
     private String registrationQueueName;
     @Value("${event.registration.routing}")
     private String registrationRouting;
+    @Value("${event.concurrency}")
+    private Integer concurrency;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -31,8 +33,8 @@ public class RabbitConfiguration {
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory() {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(rabbitTemplate.getConnectionFactory());
-        factory.setConcurrentConsumers(3);
-        factory.setMaxConcurrentConsumers(10);
+        factory.setConcurrentConsumers(concurrency);
+        factory.setMaxConcurrentConsumers(2 * concurrency);
         return factory;
     }
 
