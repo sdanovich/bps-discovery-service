@@ -20,6 +20,8 @@ public class DiscoveryEventService implements RabbitListenerConfigurer {
 
     @Value("${event.discovery.queue}")
     private String queueName;
+    @Value("${event.concurrency}")
+    private Integer concurrency;
 
     public void sendDiscovery(String discoveryId) {
         this.rabbitTemplate.convertAndSend(queueName, discoveryId);
@@ -29,7 +31,7 @@ public class DiscoveryEventService implements RabbitListenerConfigurer {
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
         SimpleRabbitListenerEndpoint endpoint = new SimpleRabbitListenerEndpoint();
         endpoint.setId("DiscoveryEventService");
-        endpoint.setConcurrency("3");
+        endpoint.setConcurrency(concurrency.toString());
         endpoint.setQueueNames(queueName);
         endpoint.setMessageListener(message -> {
             log.info("Discovery Received: " + new String(message.getBody()));

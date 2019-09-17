@@ -21,6 +21,8 @@ public class RegistrationEventService implements RabbitListenerConfigurer {
 
     @Value("${event.registration.queue}")
     private String queueName;
+    @Value("${event.concurrency}")
+    private Integer concurrency;
 
     public void sendRegistration(String registrationId) {
         this.rabbitTemplate.convertAndSend(queueName, registrationId);
@@ -30,7 +32,7 @@ public class RegistrationEventService implements RabbitListenerConfigurer {
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
         SimpleRabbitListenerEndpoint endpoint = new SimpleRabbitListenerEndpoint();
         endpoint.setId("RegistrationEventService");
-        endpoint.setConcurrency("3");
+        endpoint.setConcurrency(concurrency.toString());
         endpoint.setQueueNames(queueName);
         endpoint.setMessageListener(message -> {
             log.info("Registration Received: " + message.toString());

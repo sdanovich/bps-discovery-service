@@ -230,7 +230,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
-        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModelResponseEntity, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModelResponseEntity, rating));
+        //return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModelResponseEntity, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModelResponseEntity, rating));
+        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
     }
 
     private List<TrackResponseModel.ResponseDetail> getResponseDetails(ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity) {
@@ -260,7 +261,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     private <T> boolean isBpsPresent(Discovery discovery, String path, Class<T> clazz) {
-        return !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", StringUtils.trim(discovery.getTrackId())), clazz).orElse(Collections.emptyList()).isEmpty();
+        return discovery.getTrackId() == null ? false : !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", StringUtils.trim(discovery.getTrackId())), clazz).orElse(Collections.emptyList()).isEmpty();
     }
 
 
