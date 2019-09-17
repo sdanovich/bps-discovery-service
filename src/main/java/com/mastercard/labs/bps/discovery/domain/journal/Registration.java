@@ -53,5 +53,43 @@ public class Registration extends BpsEntity implements Record {
 
     }
 
+    @Override
+    public String getScore() {return null;};
+
+    @Override
+    public void setScore(String score) {
+
+    }
+
+    @Override
+    public String getBusinessName() {return null;};
+
+    @Override
+    public void setBusinessName(String businessName){};
+
+    @Override
+    public String getStreetAddress() {return null;};
+
+    @Override
+    public void setStreetAddress(String streetAddress){};
+
+    @Override
+    public String getTrackCity() {return null;};
+
+    @Override
+    public void setTrackCity(String trackCity){};
+
+    @Override
+    public String getTrackState() {return null;};
+
+    @Override
+    public void setTrackState(String trackState){};
+
+    @Override
+    public String getTrackZip() {return null;};
+
+    @Override
+    public void setTrackZip(String trackZip){};
+
 
 }

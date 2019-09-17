@@ -11,7 +11,8 @@ import java.io.Serializable;
 
 @JsonPropertyOrder(value = {DiscoveryConst.COMPANY_NAME, DiscoveryConst.ADDRESS_LINE_1, DiscoveryConst.ADDRESS_LINE_2, DiscoveryConst.ADDRESS_LINE_3,
         DiscoveryConst.CITY, DiscoveryConst.STATE_PROVINCE, DiscoveryConst.COUNTRY, DiscoveryConst.ZIP, DiscoveryConst.TAX_ID, DiscoveryConst.DB_ID,
-        DiscoveryConst.BPS_AVAILABLE, DiscoveryConst.CONFIDENCE})
+        DiscoveryConst.BPS_AVAILABLE, DiscoveryConst.CONFIDENCE, DiscoveryConst.TRACK_ID, DiscoveryConst.TRACK_SCORE, DiscoveryConst.TRACK_BUSINESSNAME,
+        DiscoveryConst.TRACK_STREET_ADDRESS, DiscoveryConst.TRACK_CITY, DiscoveryConst.TRACK_STATE, DiscoveryConst.TRACK_ZIP})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,4 +41,26 @@ public class DiscoveryModelBuyer implements Serializable, Model {
     private String bpsAvailable;
     @JsonProperty(value = DiscoveryConst.CONFIDENCE)
     private String confidence;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_ID)
+    private String trackId;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_SCORE)
+    private String score;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_BUSINESSNAME)
+    private String businessName;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_STREET_ADDRESS)
+    private String streetAddress;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_CITY)
+    private String trackCity;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_STATE)
+    private String trackState;
+
+    @JsonProperty(value = DiscoveryConst.TRACK_ZIP)
+    private String trackZip;
+
 }

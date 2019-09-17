@@ -55,4 +55,11 @@ public class Discovery extends BpsEntity implements Record {
     private EXISTS found;
     @Column(columnDefinition = "TEXT")
     private String reason;
+
+    String score;
+    String businessName;
+    String streetAddress;
+    String trackCity;
+    String trackState;
+    String trackZip;
 }

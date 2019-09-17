@@ -230,8 +230,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
-        //return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModelResponseEntity, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModelResponseEntity, rating));
-        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
+        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModelResponseEntity, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModelResponseEntity, rating));
+        //return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
     }
 
     private List<TrackResponseModel.ResponseDetail> getResponseDetails(ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity) {
@@ -250,7 +250,17 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                 sb.append("trackCity=" + registeredBusinessData.getAddress().getState() + ",");
                 sb.append("trackState=" + registeredBusinessData.getAddress().getState() + ",");
                 sb.append("trackZip=" + registeredBusinessData.getAddress().getZip());
-                record.setConfidence(record.getConfidence() + " " + sb.toString());
+                //record.setConfidence(record.getConfidence() + " " + sb.toString());
+
+                logger.debug("Track Info ::: "+sb.toString());
+
+                record.setScore(""+rating);
+                record.setTrackId(registeredBusinessData.getTrackId());
+                record.setBusinessName(registeredBusinessData.getBusinessName());
+                record.setStreetAddress(registeredBusinessData.getAddress().getStreetAddress());
+                record.setTrackCity(registeredBusinessData.getAddress().getCity());
+                record.setTrackState(registeredBusinessData.getAddress().getState());
+                record.setTrackZip(registeredBusinessData.getAddress().getZip());
             }
         }
         return record;
