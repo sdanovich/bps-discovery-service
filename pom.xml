@@ -10,7 +10,7 @@
     <groupId>com.mastercard.mclabs.bps</groupId>
     <artifactId>bps-discovery-service</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.32-SNAPSHOT</version>
+    <version>0.0.33-SNAPSHOT</version>
     <name>BPS DISCOVERY UI</name>
     <description>B2B Discovery Service REST API and UI</description>
 
