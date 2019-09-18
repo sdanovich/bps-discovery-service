@@ -23,4 +23,14 @@ public class DiscoveryConst {
     public static final String FILE_EXT = "CSV File Extension";
     public static final String STATUS = "Status";
     public static final String REASON = "Reason";
+
+
+    public static final String TRACK_ID = "Track Id";
+    public static final String TRACK_SCORE = "Rating";
+    public static final String TRACK_BUSINESSNAME = "Track Business Name";
+    public static final String TRACK_STREET_ADDRESS = "Track Street Address";
+    public static final String TRACK_CITY = "Track City";
+    public static final String TRACK_STATE = "Track State";
+    public static final String TRACK_ZIP = "Track Zip Code";
+
 }

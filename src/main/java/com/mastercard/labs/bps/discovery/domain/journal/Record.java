@@ -61,4 +61,30 @@ public interface Record {
     Discovery.EXISTS getFound();
 
     void setFound(Discovery.EXISTS exists);
+
+
+    String getScore();
+
+    void setScore(String score);
+
+    String getBusinessName();
+
+    void setBusinessName(String businessName);
+
+    String getStreetAddress();
+
+    void setStreetAddress(String streetAddress);
+
+    String getTrackCity();
+
+    void setTrackCity(String trackCity);
+
+    String getTrackState();
+
+    void setTrackState(String trackState);
+
+    String getTrackZip();
+
+    void setTrackZip(String trackZip);
+
 }
