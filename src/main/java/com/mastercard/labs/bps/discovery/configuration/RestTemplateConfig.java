@@ -1,6 +1,9 @@
 package com.mastercard.labs.bps.discovery.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -10,15 +13,18 @@ import org.apache.http.ssl.TrustStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
+import javax.net.ssl.SSLException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +34,7 @@ import java.security.NoSuchAlgorithmException;
 public class RestTemplateConfig {
 
     @Autowired
-    CloseableHttpClient httpClient;
+    CloseableHttpClient httpClsient;
 
 
     @Autowired
@@ -38,13 +44,13 @@ public class RestTemplateConfig {
     @Bean
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
-        return wrap(restTemplate);
+        return restTemplate;
     }
 
     @Bean
     public HttpComponentsClientHttpRequestFactory clientHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-        clientHttpRequestFactory.setHttpClient(httpClient);
+        //clientHttpRequestFactory.setHttpClient(httpClient);
         return clientHttpRequestFactory;
     }
 
@@ -64,22 +70,28 @@ public class RestTemplateConfig {
         CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
-        return wrap(new RestTemplate(requestFactory));
+        return new RestTemplate(requestFactory);
     }
 
-    private RestTemplate wrap(RestTemplate restTemplate) {
-        restTemplate.setErrorHandler(new ResponseErrorHandler() {
-            @Override
-            public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
-                return !clientHttpResponse.getStatusCode().is2xxSuccessful();
-            }
+    @Bean
+    public WebClient webClient() throws SSLException {
+        SslContext sslContext = SslContextBuilder
+                .forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .build();
+        HttpClient httpConnector = HttpClient.create().secure(t -> t.sslContext(sslContext));
 
-            @Override
-            public void handleError(ClientHttpResponse clientHttpResponse) throws IOException {
-                log.error(clientHttpResponse.getStatusText());
-            }
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpConnector.followRedirect(true)))
+                .filter(logRequest())
+                .build();
+    }
+
+    private static ExchangeFilterFunction logRequest() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            log.info("Request: {} {}", clientRequest.method(), clientRequest.url());
+            clientRequest.headers().forEach((name, values) -> values.forEach(value -> log.info("{}={}", name, value)));
+            return Mono.just(clientRequest);
         });
-        return restTemplate;
     }
 
 

@@ -49,7 +49,7 @@ track:
     singleVendorDetail: https://track-use0-nonprod14.eastus.cloudapp.azure.com/mcapi/v1/company
 
 event:
-  concurrency: 6
+  concurrency: 10
 
 journal:
   datasource:

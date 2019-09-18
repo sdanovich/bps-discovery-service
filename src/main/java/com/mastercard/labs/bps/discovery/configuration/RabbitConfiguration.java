@@ -35,6 +35,9 @@ public class RabbitConfiguration {
         factory.setConnectionFactory(rabbitTemplate.getConnectionFactory());
         factory.setConcurrentConsumers(concurrency);
         factory.setMaxConcurrentConsumers(2 * concurrency);
+        factory.setDeBatchingEnabled(true);
+        factory.setPrefetchCount(concurrency * 3);
+        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
         return factory;
     }
 

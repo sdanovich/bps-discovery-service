@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.io.InputStream;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
@@ -77,10 +76,8 @@ public class ApiTest {
         discovery.setCountry("US");
         discovery.setZip("35007");
         try {
-            restTemplateService.callTrack(discovery).get().getBody();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+            restTemplateService.callTrack(discovery).getBody();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -127,7 +124,6 @@ public class ApiTest {
         //Assert.assertThat(registrationRepository.findAll().size(), Is.is(5));
         //Assert.assertThat(registrationRepository.findAll().stream().filter(d -> d.getStatus() != Discovery.STATUS.COMPLETE).collect(Collectors.toList()).size(), Is.is(0));
     }
-
 
 
 }

@@ -93,7 +93,6 @@ public class BatchFileProcessor {
 
             CsvMapper csvMapper = new CsvMapper();
             try {
-                //TODO: error - cannot be multiple
                 csvMapper.readerFor(Map.class).with(csvSchema).readValues(byteEncryptor.decrypt(batchFile.getContent())).readAll().stream().filter(o -> o instanceof LinkedHashMap).map(o -> (LinkedHashMap<String, String>) o).forEach(map -> {
                     if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
                         discoveryEventService.sendDiscovery(discoveryRepository.save(getDiscovery(batchFile, map)).getId());
