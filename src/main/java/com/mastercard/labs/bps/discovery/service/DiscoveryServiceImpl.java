@@ -241,7 +241,6 @@ public class DiscoveryServiceImpl implements DiscoveryService {
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
         return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModel, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModel, rating));
-        //return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
     }
 
     private void logError(Record record, Throwable e) {
