@@ -50,6 +50,7 @@ track:
 
 event:
   concurrency: 10
+  webclient-timeout: 30
 
 journal:
   datasource:

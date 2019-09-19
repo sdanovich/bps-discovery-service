@@ -25,14 +25,13 @@ crypto-service-client:
 # Message Queue specific configs for discovery
 event:
   concurrency: ${AMQP_CONCURRENCY}
+  webclient-timeout: ${TRACK_REQUEST_TIMEOUT_SECONDS}
   discovery:
     exchange: discovery-exchange
-    queue:  discovery-queue
     routing:  discovery-routing-key
 
   registration:
     exchange: registartion-exchange
-    queue: registration-queue
     routing:  registration-routing-key
 
 spring:

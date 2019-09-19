@@ -76,7 +76,7 @@ public class ApiTest {
         discovery.setCountry("US");
         discovery.setZip("35007");
         try {
-            restTemplateService.callTrack(discovery).getBody();
+            restTemplateService.callTrack(discovery);
         } catch (Exception e) {
             e.printStackTrace();
         }

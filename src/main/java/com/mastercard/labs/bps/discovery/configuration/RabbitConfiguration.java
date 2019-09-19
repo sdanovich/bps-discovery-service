@@ -1,7 +1,11 @@
 package com.mastercard.labs.bps.discovery.configuration;
 
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.AcknowledgeMode;
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,14 +17,10 @@ public class RabbitConfiguration {
 
     @Value("${event.discovery.exchange}")
     private String discoveryExchangeStr;
-    @Value("${event.discovery.queue}")
-    private String discoveryQueueName;
     @Value("${event.discovery.routing}")
     private String discoveryRouting;
     @Value("${event.registration.exchange}")
     private String registrationExchangeStr;
-    @Value("${event.registration.queue}")
-    private String registrationQueueName;
     @Value("${event.registration.routing}")
     private String registrationRouting;
     @Value("${event.concurrency}")
@@ -35,20 +35,14 @@ public class RabbitConfiguration {
         factory.setConnectionFactory(rabbitTemplate.getConnectionFactory());
         factory.setConcurrentConsumers(concurrency);
         factory.setMaxConcurrentConsumers(2 * concurrency);
-        factory.setDeBatchingEnabled(true);
         factory.setPrefetchCount(concurrency * 3);
         factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
         return factory;
     }
 
     @Bean
-    public Queue discoveryQueue() {
-        return QueueBuilder.durable(discoveryQueueName).build();
-    }
-
-    @Bean
-    public Queue discoveryDeadLetterQueue() {
-        return QueueBuilder.durable(discoveryRouting).build();
+    public AmqpAdmin amqpAdmin() {
+        return new RabbitAdmin(rabbitTemplate.getConnectionFactory());
     }
 
     @Bean
@@ -56,30 +50,10 @@ public class RabbitConfiguration {
         return ExchangeBuilder.topicExchange(discoveryExchangeStr).build();
     }
 
-    @Bean
-    public Binding discoveryBinding(Queue discoveryQueue, TopicExchange discoveryExchange) {
-        return BindingBuilder.bind(discoveryQueue).to(discoveryExchange).with(discoveryQueueName);
-    }
-
-
-    @Bean
-    public Queue registrationQueue() {
-        return QueueBuilder.durable(registrationQueueName).build();
-    }
-
-    @Bean
-    public Queue registrationDeadLetterQueue() {
-        return QueueBuilder.durable(registrationRouting).build();
-    }
 
     @Bean
     public Exchange registrationExchange() {
         return ExchangeBuilder.topicExchange(registrationExchangeStr).build();
-    }
-
-    @Bean
-    public Binding registrationBinding(Queue registrationQueue, TopicExchange registrationExchange) {
-        return BindingBuilder.bind(registrationQueue).to(registrationExchange).with(registrationQueueName);
     }
 
 

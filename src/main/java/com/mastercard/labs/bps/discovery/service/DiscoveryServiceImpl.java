@@ -4,8 +4,7 @@ import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
-import com.mastercard.labs.bps.discovery.exceptions.ExecutionException;
-import com.mastercard.labs.bps.discovery.exceptions.ValidationException;
+import com.mastercard.labs.bps.discovery.exceptions.*;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
@@ -32,6 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,6 +46,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private BatchFileRepository batchFileRepository;
     @Autowired
     private DiscoveryRepository discoveryRepository;
+    @Autowired
+    private EventService eventService;
     @Autowired
     private RegistrationRepository registrationRepository;
     @Autowired
@@ -177,7 +179,19 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                 record.setStatus(Discovery.STATUS.FAILED);
                 throw new ValidationException(record.getReason());
             }
-            trackResponseModel = restTemplateService.postingWithWebClient(record);
+            try {
+                trackResponseModel = restTemplateService.postingWithWebClient(record);
+            } catch (TrackAccess4xxException | TimeoutException e) {
+                eventService.sendDiscovery(batchFile.getId() + "|" + batchFile.getType().name(), record.getId() + "|" + batchFile.getType().name());
+                trackResponseModel = null;
+            } catch (TrackAccess3xxException e) {
+                log.error("Track: The request was redirected ", e);
+                logError(record, e);
+            } catch (TrackAccess5xxException e) {
+                log.error("Track: Server error ", e);
+                logError(record, e);
+            }
+
             if (trackResponseModel != null) {
                 record.setStatus(Discovery.STATUS.COMPLETE);
                 if (!CollectionUtils.isEmpty(getResponseDetails(trackResponseModel))) {
@@ -215,21 +229,25 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                         log.info("ERROR: Empty result");
                     }
                 }
-
+            }
+        } catch (Exception e) {
+            if (e.getCause() instanceof TimeoutException) {
+                eventService.sendDiscovery(batchFile.getId() + "|" + batchFile.getType().name(), record.getId() + "|" + batchFile.getType().name());
             } else {
                 record.setFound(Discovery.EXISTS.I);
                 record.setStatus(Discovery.STATUS.FAILED);
-                record.setReason(INCONCLUSIVE_STR);
+                if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             }
-
-        } catch (Exception e) {
-            record.setFound(Discovery.EXISTS.I);
-            record.setStatus(Discovery.STATUS.FAILED);
-            if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
         return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModel, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModel, rating));
         //return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
+    }
+
+    private void logError(Record record, Throwable e) {
+        record.setFound(Discovery.EXISTS.I);
+        record.setStatus(Discovery.STATUS.FAILED);
+        record.setReason(e.getMessage());
     }
 
     private List<TrackResponseModel.ResponseDetail> getResponseDetails(TrackResponseModel trackResponseModel) {
