@@ -9,8 +9,7 @@ import com.mastercard.labs.bps.discovery.domain.journal.Registration;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
-import com.mastercard.labs.bps.discovery.service.DiscoveryEventService;
-import com.mastercard.labs.bps.discovery.service.RegistrationEventService;
+import com.mastercard.labs.bps.discovery.service.EventService;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
 import lombok.extern.slf4j.Slf4j;
 import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -45,11 +45,7 @@ public class BatchFileProcessor {
     private PooledPBEByteEncryptor byteEncryptor;
 
     @Autowired
-    private DiscoveryEventService discoveryEventService;
-
-    @Autowired
-    private RegistrationEventService registrationEventService;
-
+    private EventService eventService;
 
     @Value("${discovery.delimiter}")
     private char delimiter;
@@ -60,7 +56,10 @@ public class BatchFileProcessor {
         batchFileRepository.findByStatus(RECEIVED).orElse(Collections.emptySet()).parallelStream().filter(Objects::nonNull).forEach(batchFile -> {
             try {
                 batchFile.setStatus(PROCESSING);
-                processIncoming(batchFileRepository.save(batchFile));
+                batchFileRepository.save(batchFile);
+                String queueName = batchFile.getId() + "|" + batchFile.getType().name();
+                eventService.setUpQueue(queueName);
+                processIncoming(queueName, batchFile);
 
             } catch (Exception e) {
                 log.info("cannot parse", e.getLocalizedMessage(), e);
@@ -86,22 +85,20 @@ public class BatchFileProcessor {
         });
     }
 
-    private void processIncoming(BatchFile batchFile) {
+    private void processIncoming(String queueName, BatchFile batchFile) {
         CsvSchema csvSchema = CsvSchema.builder().setUseHeader(true).build().withColumnSeparator(delimiter);
 
         if (batchFile != null) {
 
             CsvMapper csvMapper = new CsvMapper();
             try {
-                //TODO: error - cannot be multiple
                 csvMapper.readerFor(Map.class).with(csvSchema).readValues(byteEncryptor.decrypt(batchFile.getContent())).readAll().stream().filter(o -> o instanceof LinkedHashMap).map(o -> (LinkedHashMap<String, String>) o).forEach(map -> {
                     if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
-                        discoveryEventService.sendDiscovery(discoveryRepository.save(getDiscovery(batchFile, map)).getId());
+                        eventService.sendDiscovery(queueName, discoveryRepository.save(getDiscovery(batchFile, map)).getId() + "|" + BatchFile.TYPE.LOOKUP.name());
                     } else if (batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
-                        registrationEventService.sendRegistration(registrationRepository.save(getRegistration(batchFile, map)).getId());
+                        eventService.sendDiscovery(queueName, registrationRepository.save(getRegistration(batchFile, map)).getId() + "|" + BatchFile.TYPE.REGISTRATION.name());
                     }
                 });
-
             } catch (IOException e) {
                 log.error(e.getMessage(), e.getLocalizedMessage(), e);
                 batchFile.setStatus(BatchFile.STATUS.INVALID_FILE);

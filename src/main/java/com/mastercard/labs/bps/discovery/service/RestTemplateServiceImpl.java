@@ -6,17 +6,15 @@ import com.mastercard.labs.bps.discovery.controller.GlobalExceptionHandler;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
-import com.mastercard.labs.bps.discovery.exceptions.ExecutionException;
-import com.mastercard.labs.bps.discovery.exceptions.ResourceNotFoundException;
-import com.mastercard.labs.bps.discovery.exceptions.TrackAuthenticationException;
+import com.mastercard.labs.bps.discovery.exceptions.*;
 import com.mastercard.labs.bps.discovery.webhook.model.*;
 import lombok.extern.slf4j.Slf4j;
 import ma.glasnost.orika.BoundMapperFacade;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.util.Pair;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -24,15 +22,20 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,7 +45,7 @@ import java.util.stream.Stream;
 public class RestTemplateServiceImpl {
 
     @Autowired
-    private TaskExecutor taskExecutor;
+    private WebClient webClient;
 
     @Autowired
     private BoundMapperFacade<Discovery, TrackRequestModel> discoveryToTrackModel;
@@ -85,6 +88,9 @@ public class RestTemplateServiceImpl {
     @Value("${track.auth.scope}")
     private String trackAuthScope;
 
+    @Value("${event.webclient-timeout}")
+    private Integer webClientTimeout;
+
     @Autowired
     private RestTemplate externalSSLRestTemplate;
 
@@ -98,25 +104,50 @@ public class RestTemplateServiceImpl {
     }
 
 
-    public FutureTask<ResponseEntity<TrackResponseModel>> callTrack(Record record) throws ExecutionException, InterruptedException {
+    public TrackResponseModel callTrack(Record record) throws ExecutionException, InterruptedException {
+        Instant instant = Instant.now();
         HttpHeaders headers = getHeaders();
         try {
-            headers.add("authorization", trackAuthBearer());
-            FutureTask<ResponseEntity<TrackResponseModel>> task = new FutureTask<>(() -> {
-                try {
-                    return getRestTemplate(urlToTrack).exchange(urlToTrack, HttpMethod.POST, new HttpEntity<>(record instanceof Discovery ? discoveryToTrackModel.map((Discovery) record) : registrationToTrackModel.map((Registration) record), headers), TrackResponseModel.class);
-                } catch (final HttpClientErrorException e) {
-                    log.error("Status Code: " + e.getStatusCode());
-                    log.error("Response: " + e.getResponseBodyAsString());
-                    throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getResponseBodyAsString());
-                }
-            });
-            taskExecutor.execute(task);
-            return task;
-        } catch (TrackAuthenticationException e) {
+            headers.add("authorization", "Bearer " + trackAuthBearer());
+            log.error("CALCULATING AUTH -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
+            try {
+                TrackRequestModel model = record instanceof Discovery ? discoveryToTrackModel.map((Discovery) record) : registrationToTrackModel.map((Registration) record);
+                log.error("CALCULATING MODEL -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
+                return getRestTemplate(urlToTrack).exchange(urlToTrack, HttpMethod.POST, new HttpEntity<>(model, headers), TrackResponseModel.class).getBody();
+            } catch (final HttpClientErrorException e) {
+                log.error("Status Code: " + e.getStatusCode());
+                log.error("Response: " + e.getResponseBodyAsString());
+                throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getResponseBodyAsString());
+            }
+
+        } catch (TrackAccessException e) {
             throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } finally {
+            log.error("CALCULATING TRACK CALL -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
         }
     }
+
+    public TrackResponseModel postingWithWebClient(Record record) throws TrackAccess3xxException, TrackAccess4xxException, TrackAccess5xxException, TimeoutException {
+        Instant instant = Instant.now();
+        TrackRequestModel model = record instanceof Discovery ? discoveryToTrackModel.map((Discovery) record) : registrationToTrackModel.map((Registration) record);
+        log.error("CALCULATING MODEL -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
+        try {
+            return webClient.post().uri(urlToTrack).accept(MediaType.APPLICATION_JSON_UTF8).header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+                    .header("authorization", trackAuthBearer())
+                    .headers(h -> h.setBearerAuth(trackAuthBearer()))
+                    .body(BodyInserters.fromObject(model)).retrieve()
+                    .onStatus(HttpStatus::is4xxClientError, clientResponse -> Mono.error(new TrackAccess4xxException("Error accessing Track: " + clientResponse.statusCode().getReasonPhrase())))
+                    .onStatus(HttpStatus::is3xxRedirection, clientResponse -> Mono.error(new TrackAccess3xxException("Error accessing Track: " + clientResponse.statusCode().getReasonPhrase())))
+                    .onStatus(HttpStatus::is5xxServerError, clientResponse -> Mono.error(new TrackAccess5xxException("Error accessing Track: " + clientResponse.statusCode().getReasonPhrase())))
+                    .bodyToMono(TrackResponseModel.class)
+                    .timeout(Duration.ofSeconds(webClientTimeout))
+                    .block();
+
+        } finally {
+            log.error("CALCULATING TRACK CALL -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
+        }
+    }
+
 
     public <T> Optional<List<T>> getCompanyFromDirectory(String url, Class<T> clazz) {
         try {
@@ -216,13 +247,13 @@ public class RestTemplateServiceImpl {
                     int expirationSeconds = ((Map<String, Integer>) response.getBody()).get("ext_expires_in");
                     tokenExpiration.set(Pair.of(LocalDateTime.now().plusSeconds(expirationSeconds), ((Map<String, String>) response.getBody()).get("access_token")));
                 } else {
-                    throw new TrackAuthenticationException("error obtaining track oauth2 token");
+                    throw new TrackAccessException("error obtaining track oauth2 token");
                 }
             } catch (Exception e) {
-                throw new TrackAuthenticationException(e.getMessage());
+                throw new TrackAccessException(e.getMessage());
             }
         }
-        return "Bearer " + tokenExpiration.get().getSecond();
+        return tokenExpiration.get().getSecond();
     }
 
     private HttpHeaders getHeaders() {

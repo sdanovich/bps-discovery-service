@@ -4,8 +4,7 @@ import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
-import com.mastercard.labs.bps.discovery.exceptions.ExecutionException;
-import com.mastercard.labs.bps.discovery.exceptions.ValidationException;
+import com.mastercard.labs.bps.discovery.exceptions.*;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
@@ -22,7 +21,6 @@ import org.jasypt.encryption.pbe.PooledPBEByteEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,6 +46,8 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private BatchFileRepository batchFileRepository;
     @Autowired
     private DiscoveryRepository discoveryRepository;
+    @Autowired
+    private EventService eventService;
     @Autowired
     private RegistrationRepository registrationRepository;
     @Autowired
@@ -170,7 +171,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     public Record persistRecord(BatchFile batchFile, Record record) {
-        ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity = null;
+        TrackResponseModel trackResponseModel = null;
         Double rating = 0.0;
         try {
             if (batchFile.getType() == BatchFile.TYPE.REGISTRATION && !isDiscoveryValid(record, batchFile.getEntityType())) {
@@ -178,11 +179,23 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                 record.setStatus(Discovery.STATUS.FAILED);
                 throw new ValidationException(record.getReason());
             }
-            trackResponseModelResponseEntity = restTemplateService.callTrack(record).get();
-            if (trackResponseModelResponseEntity.getStatusCode().is2xxSuccessful()) {
+            try {
+                trackResponseModel = restTemplateService.postingWithWebClient(record);
+            } catch (TrackAccess4xxException | TimeoutException e) {
+                eventService.sendDiscovery(batchFile.getId() + "|" + batchFile.getType().name(), record.getId() + "|" + batchFile.getType().name());
+                trackResponseModel = null;
+            } catch (TrackAccess3xxException e) {
+                log.error("Track: The request was redirected ", e);
+                logError(record, e);
+            } catch (TrackAccess5xxException e) {
+                log.error("Track: Server error ", e);
+                logError(record, e);
+            }
+
+            if (trackResponseModel != null) {
                 record.setStatus(Discovery.STATUS.COMPLETE);
-                if (!CollectionUtils.isEmpty(getResponseDetails(trackResponseModelResponseEntity))) {
-                    List<TrackResponseModel.ResponseDetail> responseDetails = getResponseDetails(trackResponseModelResponseEntity);
+                if (!CollectionUtils.isEmpty(getResponseDetails(trackResponseModel))) {
+                    List<TrackResponseModel.ResponseDetail> responseDetails = getResponseDetails(trackResponseModel);
                     if (responseDetails.size() > 1) {
                         //TODO: error - cannot be multiple
                         record.setFound(Discovery.EXISTS.N);
@@ -199,12 +212,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                             }
                             record.setFound((2 == rating) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
                             //if (record.getFound() == Discovery.EXISTS.Y) {
-                                if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
-                                    if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
-                                        ((Discovery) record).setBpsPresent(isBpsPresent((Discovery) record, pathToBuyer, BuyerAgent.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
-                                    } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
-                                        ((Discovery) record).setBpsPresent(isBpsPresent((Discovery) record, pathToSupplier, Supplier.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
-                                    }
+                            if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
+                                if (batchFile.getEntityType() == BatchFile.ENTITY.BUYER) {
+                                    ((Discovery) record).setBpsPresent(isBpsPresent((Discovery) record, pathToBuyer, BuyerAgent.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                } else if (batchFile.getEntityType() == BatchFile.ENTITY.SUPPLIER) {
+                                    ((Discovery) record).setBpsPresent(isBpsPresent((Discovery) record, pathToSupplier, Supplier.class) ? Discovery.EXISTS.Y : Discovery.EXISTS.N);
+                                }
                                 //}
                             }
                         } else {
@@ -216,31 +229,33 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                         log.info("ERROR: Empty result");
                     }
                 }
-
+            }
+        } catch (Exception e) {
+            if (e.getCause() instanceof TimeoutException) {
+                eventService.sendDiscovery(batchFile.getId() + "|" + batchFile.getType().name(), record.getId() + "|" + batchFile.getType().name());
             } else {
                 record.setFound(Discovery.EXISTS.I);
                 record.setStatus(Discovery.STATUS.FAILED);
-                record.setReason(INCONCLUSIVE_STR);
-                log.info("ERROR: " + trackResponseModelResponseEntity.getStatusCodeValue());
+                if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             }
-
-        } catch (Exception e) {
-            record.setFound(Discovery.EXISTS.I);
-            record.setStatus(Discovery.STATUS.FAILED);
-            if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
             log.error(e.getMessage(), e.getLocalizedMessage(), e);
         }
-        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModelResponseEntity, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModelResponseEntity, rating));
-        //return (record instanceof Discovery) ? discoveryRepository.save((Discovery) record) : registrationRepository.save(register(batchFile, (Registration) record));
+        return (record instanceof Discovery) ? discoveryRepository.save((Discovery) enrich(record, trackResponseModel, rating)) : registrationRepository.save((Registration) enrich(register(batchFile, (Registration) record), trackResponseModel, rating));
     }
 
-    private List<TrackResponseModel.ResponseDetail> getResponseDetails(ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity) {
-        return Optional.ofNullable(trackResponseModelResponseEntity.getBody()).orElse(new TrackResponseModel()).getResponseDetail();
+    private void logError(Record record, Throwable e) {
+        record.setFound(Discovery.EXISTS.I);
+        record.setStatus(Discovery.STATUS.FAILED);
+        record.setReason(e.getMessage());
     }
 
-    private <T extends Record> Record enrich(Record record, ResponseEntity<TrackResponseModel> trackResponseModelResponseEntity, Double rating) {
+    private List<TrackResponseModel.ResponseDetail> getResponseDetails(TrackResponseModel trackResponseModel) {
+        return Optional.ofNullable(trackResponseModel).orElse(new TrackResponseModel()).getResponseDetail();
+    }
+
+    private <T extends Record> Record enrich(Record record, TrackResponseModel trackResponseModel, Double rating) {
         if (Stream.of(environment.getActiveProfiles()).anyMatch(p -> StringUtils.containsAny(p, "debug", "dev"))) {
-            TrackResponseModel.RegisteredBusinessData registeredBusinessData = getRegisteredBusinessData(getResponseDetails(trackResponseModelResponseEntity));
+            TrackResponseModel.RegisteredBusinessData registeredBusinessData = getRegisteredBusinessData(getResponseDetails(trackResponseModel));
             if (registeredBusinessData != null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("score=" + rating + ",");
@@ -252,9 +267,9 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                 sb.append("trackZip=" + registeredBusinessData.getAddress().getZip());
                 //record.setConfidence(record.getConfidence() + " " + sb.toString());
 
-                logger.debug("Track Info ::: "+sb.toString());
+                logger.debug("Track Info ::: " + sb.toString());
 
-                record.setScore(""+rating);
+                record.setScore("" + rating);
                 record.setTrackId(registeredBusinessData.getTrackId());
                 record.setBusinessName(registeredBusinessData.getBusinessName());
                 record.setStreetAddress(registeredBusinessData.getAddress().getStreetAddress());

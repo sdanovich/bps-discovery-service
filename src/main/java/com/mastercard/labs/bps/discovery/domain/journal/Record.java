@@ -2,6 +2,8 @@ package com.mastercard.labs.bps.discovery.domain.journal;
 
 public interface Record {
 
+    String getId();
+
     String getCompanyName();
 
     void setCompanyName(String companyName);
