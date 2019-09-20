@@ -107,6 +107,6 @@ var discoverytable = new Vue({
         fetchData.call(this);
         setInterval(function () {
             fetchData.call(this);
-        }.bind(this), 1000);
+        }.bind(this), 5000);
     }
 })

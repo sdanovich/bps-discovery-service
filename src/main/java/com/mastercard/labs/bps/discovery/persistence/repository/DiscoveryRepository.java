@@ -10,5 +10,8 @@ import java.util.List;
 public interface DiscoveryRepository extends JpaRepository<Discovery, String> {
 
     List<Discovery> findByBatchId(String batchId);
+    long countByBatchId(String batchId);
+
+    long countByBatchIdAndStatusIn(String batchId, List<Discovery.STATUS> statuses);
 
 }

@@ -36,6 +36,8 @@ public class DiscoveryTable {
     private BatchFile.TYPE type;
     @JsonIgnore
     private BatchFile.ENTITY entity;
+    @JsonIgnore
+    private int completePercent;
 
     @JsonGetter("uploadDate")
     public String getUploadDate() {
@@ -68,7 +70,11 @@ public class DiscoveryTable {
 
     @JsonGetter("status")
     public String getStatus() {
-        return status.name();
+        if (status == BatchFile.STATUS.PROCESSING && completePercent != 0) {
+            return status.name() + " (" + completePercent + "%)";
+        } else {
+            return status.name();
+        }
     }
 
     @JsonGetter("type")

@@ -104,29 +104,6 @@ public class RestTemplateServiceImpl {
     }
 
 
-    public TrackResponseModel callTrack(Record record) throws ExecutionException, InterruptedException {
-        Instant instant = Instant.now();
-        HttpHeaders headers = getHeaders();
-        try {
-            headers.add("authorization", "Bearer " + trackAuthBearer());
-            log.error("CALCULATING AUTH -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
-            try {
-                TrackRequestModel model = record instanceof Discovery ? discoveryToTrackModel.map((Discovery) record) : registrationToTrackModel.map((Registration) record);
-                log.error("CALCULATING MODEL -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
-                return getRestTemplate(urlToTrack).exchange(urlToTrack, HttpMethod.POST, new HttpEntity<>(model, headers), TrackResponseModel.class).getBody();
-            } catch (final HttpClientErrorException e) {
-                log.error("Status Code: " + e.getStatusCode());
-                log.error("Response: " + e.getResponseBodyAsString());
-                throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getResponseBodyAsString());
-            }
-
-        } catch (TrackAccessException e) {
-            throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } finally {
-            log.error("CALCULATING TRACK CALL -> " + instant.until(Instant.now(), ChronoUnit.MILLIS) + " millis");
-        }
-    }
-
     public TrackResponseModel postingWithWebClient(Record record) throws TrackAccess3xxException, TrackAccess4xxException, TrackAccess5xxException, TimeoutException {
         Instant instant = Instant.now();
         TrackRequestModel model = record instanceof Discovery ? discoveryToTrackModel.map((Discovery) record) : registrationToTrackModel.map((Registration) record);

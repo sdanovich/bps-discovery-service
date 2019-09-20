@@ -126,7 +126,7 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
+                        
                     }, 2000);
 
                 },
@@ -137,7 +137,7 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
+                        
                     }, 2000);
 
                 }
@@ -173,7 +173,7 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
+                        
                     }, 2000);
 
                 },
@@ -184,7 +184,7 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
+                        
                     }, 2000);
 
                 }
@@ -220,7 +220,7 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
+                        
                     }, 2000);
 
                 },
@@ -231,7 +231,7 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
+                        
                     }, 2000);
 
                 }
@@ -266,7 +266,6 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
                     }, 2000);
 
                 },
@@ -277,7 +276,6 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
                     }, 2000);
 
                 }
@@ -312,7 +310,6 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
                     }, 2000);
 
                 },
@@ -323,7 +320,6 @@
                     console.log('key: ' + key);
                     setTimeout(() => {
                         this.show2 = !this.show2;
-                        window.location.reload();
                     }, 2000);
 
                 }

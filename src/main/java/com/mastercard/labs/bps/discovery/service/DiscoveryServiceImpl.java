@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.net.ssl.SSLException;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Collections;
@@ -129,7 +130,26 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     public List<DiscoveryTable> getBatches(Integer timeZone) {
-        return batchFileRepository.findAll().stream().sorted(Comparator.comparing(BatchFile::getCreationDate).reversed()).map(batchFile -> new DiscoveryTable(batchFile.getId(), batchFile.getFileName(), batchFile.getCreationDate(), timeZone, batchFile.getStatus(), batchFile.getType(), batchFile.getEntityType())).collect(Collectors.toList());
+        return batchFileRepository.findAll().stream().sorted(Comparator.comparing(BatchFile::getCreationDate).reversed()).map(batchFile -> {
+            int percentage = 0;
+            if (batchFile.getStatus() == BatchFile.STATUS.PROCESSING) {
+                long total = 0;
+                long completed = 0;
+                if (batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
+                    total = registrationRepository.countByBatchId(batchFile.getId());
+                    completed = registrationRepository.countByBatchIdAndStatusIn(batchFile.getId(), Stream.of(Discovery.STATUS.COMPLETE, Discovery.STATUS.FAILED).collect(Collectors.toList()));
+                } else if (batchFile.getType() == BatchFile.TYPE.LOOKUP) {
+                    total = discoveryRepository.countByBatchId(batchFile.getId());
+                    completed = discoveryRepository.countByBatchIdAndStatusIn(batchFile.getId(), Stream.of(Discovery.STATUS.COMPLETE, Discovery.STATUS.FAILED).collect(Collectors.toList()));
+                }
+                if (total != 0 && completed != 0) {
+                    percentage = new Double(completed * 100 / total).intValue();
+                    if (percentage < 0) percentage = 0;
+                    if (percentage > 100) percentage = 100;
+                }
+            }
+            return new DiscoveryTable(batchFile.getId(), batchFile.getFileName(), batchFile.getCreationDate(), timeZone, batchFile.getStatus(), batchFile.getType(), batchFile.getEntityType(), percentage);
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -231,7 +251,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                 }
             }
         } catch (Exception e) {
-            if (e.getCause() instanceof TimeoutException) {
+            if (e.getCause() instanceof TimeoutException || e.getCause() instanceof SSLException) {
                 eventService.sendDiscovery(batchFile.getId() + "|" + batchFile.getType().name(), record.getId() + "|" + batchFile.getType().name());
             } else {
                 record.setFound(Discovery.EXISTS.I);
@@ -286,7 +306,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     }
 
     private <T> boolean isBpsPresent(Discovery discovery, String path, Class<T> clazz) {
-        return discovery.getTrackId() == null ? false : !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", StringUtils.trim(discovery.getTrackId())), clazz).orElse(Collections.emptyList()).isEmpty();
+        return discovery.getTrackId() != null && !restTemplateService.getCompanyFromDirectory(StringUtils.replace(path, "{trackid}", StringUtils.trim(discovery.getTrackId())), clazz).orElse(Collections.emptyList()).isEmpty();
     }
 
 

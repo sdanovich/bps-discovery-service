@@ -87,8 +87,4 @@ public class EventService implements RabbitListenerConfigurer {
         }
         registrar.registerEndpoint(getSimpleRabbitListenerEndpoint(queueName));
     }
-
-    public void wakeUpQueue(String queueName) {
-        amqpAdmin.initialize();
-    }
 }

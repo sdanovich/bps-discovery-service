@@ -47,9 +47,9 @@
                             Uploaded
                         </div>
                     </div>
-                    <div v-else-if="entry[key].toLowerCase() === 'processing'">
-                        <div style="background-color: #cc6600;text-align: center;border-radius: 2px;font-family: sans-serif;padding: 5px;">
-                            Processing
+                    <div v-else-if="entry[key].toLowerCase().startsWith('processing')">
+                        <div style="background-color: #cc6600;text-align: center;border-radius: 2px; color: white; font-family: sans-serif;padding: 5px;">
+                            Processing {{ entry[key].substring(11) }}
                         </div>
                     </div>
                     <div v-else-if="entry[key].toLowerCase() === 'complete'">
@@ -131,7 +131,7 @@
 
         <div class='border2'>
             <fieldset>
-                <legend  align="center" style="color:#ff8000;font-weight:bold;font-size: 20px;">Registration</legend>
+                <legend align="center" style="color:#ff8000;font-weight:bold;font-size: 20px;">Registration</legend>
                 <div class="form-group">
                     <select class="agent-control"
                             name="agentName" id="agentName" required="required">
