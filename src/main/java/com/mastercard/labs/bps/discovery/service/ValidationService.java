@@ -3,6 +3,7 @@ package com.mastercard.labs.bps.discovery.service;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Record;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
+import com.mastercard.labs.bps.discovery.domain.journal.Rules;
 import com.mastercard.labs.bps.discovery.webhook.model.*;
 import ma.glasnost.orika.BoundMapperFacade;
 import ma.glasnost.orika.CustomMapper;
@@ -174,6 +175,24 @@ public class ValidationService {
         return mapperFactory.getMapperFacade(Registration.class, RegistrationModelBuyer.class);
     }
 
+    @Bean
+    public BoundMapperFacade<Rules, RuleRegistrationModel> rulesRegistrationToCSV() {
+        DefaultMapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+        mapperFactory.classMap(Rules.class, RuleRegistrationModel.class)
+                .customize(
+                        new CustomMapper<Rules, RuleRegistrationModel>() {
+                            @Override
+                            public void mapAtoB(Rules a, RuleRegistrationModel b, MappingContext context) {
+                                rulesRegistrationModelService(a, b);
+                            }
+                        }
+                )
+                .byDefault()
+                .register();
+        return mapperFactory.getMapperFacade(Rules.class, RuleRegistrationModel.class);
+    }
+
+
     private void discoveryModelService(Discovery a, Object target) {
         if (target instanceof DiscoveryModelSupplier) {
             getSupplierModel(a, (DiscoveryModelSupplier) target);
@@ -273,6 +292,42 @@ public class ValidationService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private void rulesRegistrationModelService(Rules a, Object target) {
+        if (target instanceof RuleRegistrationModel) {
+            getSupplierRulesModel(a, (RuleRegistrationModel) target);
+        }
+    }
+
+    private void getSupplierRulesModel(Rules a, RuleRegistrationModel target) {
+        RuleRegistrationModel b = target;
+        b.setSupplierId(a.getSupplierId());
+        b.setEnforcementType(a.getEnforcementType());
+        b.setMaxAmtLimit(a.getMaxAmtLimit()+"");
+        b.setRelationship(a.getRelationship());
+        b.setStatus(a.getStatus().name());
+        b.setReason(a.getReason());
+        b.setBuyerTaxId1(a.getBuyerTaxId1());
+        b.setBuyerTaxId2(a.getBuyerTaxId2());
+        b.setBuyerTaxId3(a.getBuyerTaxId3());
+        b.setBuyerTaxId4(a.getBuyerTaxId4());
+        b.setBuyerTaxId5(a.getBuyerTaxId5());
+        b.setBuyerTaxId6(a.getBuyerTaxId6());
+        b.setBuyerTaxId7(a.getBuyerTaxId7());
+        b.setBuyerTaxId8(a.getBuyerTaxId8());
+        b.setBuyerTaxId9(a.getBuyerTaxId9());
+        b.setBuyerTaxId10(a.getBuyerTaxId10());
+        b.setBuyerTaxId11(a.getBuyerTaxId11());
+        b.setBuyerTaxId12(a.getBuyerTaxId12());
+        b.setBuyerTaxId13(a.getBuyerTaxId13());
+        b.setBuyerTaxId14(a.getBuyerTaxId14());
+        b.setBuyerTaxId15(a.getBuyerTaxId15());
+        b.setBuyerTaxId16(a.getBuyerTaxId16());
+        b.setBuyerTaxId17(a.getBuyerTaxId17());
+        b.setBuyerTaxId18(a.getBuyerTaxId18());
+        b.setBuyerTaxId19(a.getBuyerTaxId19());
+        b.setBuyerTaxId20(a.getBuyerTaxId20());
     }
 
 }

@@ -60,6 +60,8 @@ public class DiscoveryTable {
                 operation = "discovery";
             } else if (type == BatchFile.TYPE.REGISTRATION) {
                 operation = "registration";
+            } else if (type == BatchFile.TYPE.RULES) {
+                operation = "rules";
             }
             output = "/" + Stream.of(operation, entity, id).collect(Collectors.joining("/"));
         } else {
@@ -92,6 +94,8 @@ public class DiscoveryTable {
             operation = "Discovery";
         } else if (type == BatchFile.TYPE.REGISTRATION) {
             operation = "Registration";
+        }  else if (type == BatchFile.TYPE.RULES) {
+            operation = "Rules";
         }
         return Stream.of(entity, operation).collect(Collectors.joining(" "));
     }

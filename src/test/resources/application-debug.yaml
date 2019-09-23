@@ -40,7 +40,8 @@ webhook:
   secretKey: v7aJHjbbxASKiwDW5wq6
 
 event:
-   concurrency: 6
+  concurrency: 10
+  webclient-timeout: 30
 
 discovery:
   delimiter: "|"

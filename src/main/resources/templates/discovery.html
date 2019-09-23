@@ -173,6 +173,26 @@
             </fieldset>
         </div>
 
+        <div class="border3">
+            <fieldset>
+                <legend align="center" style="color:#ff8000;font-weight:bold;font-size: 20px;">Supplier Rules Registration</legend>
+                <div id="app">
+                    <div class="item5">
+                        <a class="button button3" @click="toggleShow2">Rules Registration</a>
+                        <bps-discovery-upload url="/bps/discovery/v0.1/registration/suppliers/rules"
+                                              lang-type="en"
+                                              :only-single="true"
+                                              :value="show2"
+                                              field="file"
+                                              key="0"
+                                              max-size="2048"
+                                              :only-csv="true"
+                                              :params="otherParams"></bps-discovery-upload>
+                    </div>
+                </div>
+
+            </fieldset>
+        </div>
 
     </div>
     <!-- discoverytable root element -->

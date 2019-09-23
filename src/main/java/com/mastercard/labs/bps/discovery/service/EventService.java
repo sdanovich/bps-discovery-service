@@ -32,6 +32,8 @@ public class EventService implements RabbitListenerConfigurer {
     @Autowired
     private Exchange registrationExchange;
     @Autowired
+    private Exchange rulesExchange;
+    @Autowired
     private AmqpAdmin amqpAdmin;
     @Autowired
     private BatchFileRepository batchFileRepository;
@@ -70,6 +72,9 @@ public class EventService implements RabbitListenerConfigurer {
                 case REGISTRATION:
                     discoveryService.persistRegistration(StringUtils.substringBefore(messageKey, "|"));
                     break;
+                case RULES:
+                    discoveryService.persistRules(StringUtils.substringBefore(messageKey, "|"));
+                    break;
                 default:
                     throw new ExecutionException("unknown code in message listener: " + queueName);
             }
@@ -84,6 +89,8 @@ public class EventService implements RabbitListenerConfigurer {
             amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(discoveryExchange).with(queueName).noargs());
         } else if (BatchFile.TYPE.valueOf(StringUtils.substringAfter(queueName, "|")) == BatchFile.TYPE.REGISTRATION) {
             amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(registrationExchange).with(queueName).noargs());
+        } else if (BatchFile.TYPE.valueOf(StringUtils.substringAfter(queueName, "|")) == BatchFile.TYPE.RULES) {
+            amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(rulesExchange).with(queueName).noargs());
         }
         registrar.registerEndpoint(getSimpleRabbitListenerEndpoint(queueName));
     }

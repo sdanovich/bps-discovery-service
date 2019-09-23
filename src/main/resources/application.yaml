@@ -34,6 +34,10 @@ event:
     exchange: registartion-exchange
     routing:  registration-routing-key
 
+  rules:
+    exchange: rules-exchange
+    routing:  rules-routing-key
+
 spring:
   rabbitmq:
     host: ${AMQP_SERVER_ADDRESS}
@@ -110,6 +114,11 @@ directory:
     registerBuyer: /registration/buyers
     registerSupplier: /registration/suppliers
     agentList: /agents
+
+rules:
+  createRule: /rules
+  rejectMsg: "Amount Control Reject"
+  warningMsg: "Amount Control Warning"
 
 webhook:
   tolerance: 60
