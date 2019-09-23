@@ -26,6 +26,10 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import org.springframework.core.task.TaskExecutor;
+
+import java.util.concurrent.FutureTask;
+
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -91,11 +95,20 @@ public class RestTemplateServiceImpl {
     @Value("${event.webclient-timeout}")
     private Integer webClientTimeout;
 
+    @Value("${swagger.url.rules}")
+    private String rulesPath;
+
+    @Value("${rules.createRule}")
+    private String rules;
+
     @Autowired
     private RestTemplate externalSSLRestTemplate;
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private TaskExecutor taskExecutor;
 
     private volatile AtomicReference<org.springframework.data.util.Pair<LocalDateTime, String>> tokenExpiration = new AtomicReference<>(org.springframework.data.util.Pair.of(LocalDateTime.MIN, ""));
 
@@ -206,6 +219,25 @@ public class RestTemplateServiceImpl {
         }
         return Collections.emptyList();
     }
+
+    public FutureTask<ResponseEntity<RuleResponse>> callRulesEngine(RuleRequestModel record) throws ExecutionException, InterruptedException {
+        try {
+            FutureTask<ResponseEntity<RuleResponse>> task = new FutureTask<>(() -> {
+                try {
+                    return getRestTemplate(rulesPath).exchange(rulesPath + rules, HttpMethod.POST, new HttpEntity<>(record, getHeaders()), RuleResponse.class);
+                } catch (final HttpClientErrorException e) {
+                    log.error("Status Code: " + e.getStatusCode());
+                    log.error("Response: " + e.getResponseBodyAsString());
+                    throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getResponseBodyAsString());
+                }
+            });
+            taskExecutor.execute(task);
+            return task;
+        } catch (Exception e) {
+            throw new ResourceNotFoundException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
 
     private String trackAuthBearer() {
         if (tokenExpiration.get().getFirst().isEqual(LocalDateTime.MIN) || tokenExpiration.get().getFirst().until(LocalDateTime.now(), ChronoUnit.SECONDS) > -10) {

@@ -26,6 +26,11 @@ public class RabbitConfiguration {
     @Value("${event.concurrency}")
     private Integer concurrency;
 
+    @Value("${event.rules.exchange}")
+    private String rulesExchangeStr;
+    @Value("${event.rules.routing}")
+    private String rulesRouting;
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -56,5 +61,9 @@ public class RabbitConfiguration {
         return ExchangeBuilder.topicExchange(registrationExchangeStr).build();
     }
 
+    @Bean
+    public Exchange rulesExchange() {
+        return ExchangeBuilder.topicExchange(rulesExchangeStr).build();
+    }
 
 }

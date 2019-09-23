@@ -20,5 +20,6 @@ public interface BatchFileRepository extends JpaRepository<BatchFile, String> {
     @Query(value = "select bf from BatchFile bf inner join com.mastercard.labs.bps.discovery.domain.journal.Registration pm on bf.id = pm.batchId where bf.status in ('PROCESSING') and pm.status in ('COMPLETE', 'FAILED') and bf.id not in (select bf.id from BatchFile bf inner join com.mastercard.labs.bps.discovery.domain.journal.Registration pm on bf.id = pm.batchId where bf.status in ('PROCESSING') and pm.status in ('READY'))")
     List<BatchFile> findAllProcessedRegistriesBatches();
 
-
+    @Query(value = "select bf from BatchFile bf inner join com.mastercard.labs.bps.discovery.domain.journal.Rules pm on bf.id = pm.batchId where bf.status in ('PROCESSING') and pm.status in ('COMPLETE', 'FAILED') and bf.id not in (select bf.id from BatchFile bf inner join com.mastercard.labs.bps.discovery.domain.journal.Rules pm on bf.id = pm.batchId where bf.status in ('PROCESSING') and pm.status in ('READY'))")
+    List<BatchFile> findAllProcessedRulesRegistriesBatches();
 }

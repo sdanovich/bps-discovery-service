@@ -24,7 +24,8 @@ public class BatchFile extends BpsEntity {
 
     public enum TYPE {
         LOOKUP,
-        REGISTRATION
+        REGISTRATION,
+        RULES
     }
 
     public enum ENTITY {

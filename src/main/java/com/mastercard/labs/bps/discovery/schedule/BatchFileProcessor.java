@@ -6,9 +6,11 @@ import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
 import com.mastercard.labs.bps.discovery.domain.journal.Discovery.STATUS;
 import com.mastercard.labs.bps.discovery.domain.journal.Registration;
+import com.mastercard.labs.bps.discovery.domain.journal.Rules;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
+import com.mastercard.labs.bps.discovery.persistence.repository.RulesRegistrationRepository;
 import com.mastercard.labs.bps.discovery.service.EventService;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,6 +51,8 @@ public class BatchFileProcessor {
     @Value("${discovery.delimiter}")
     private char delimiter;
 
+    @Autowired
+    private RulesRegistrationRepository rulesRegistrationRepository;
 
     @Scheduled(fixedRate = 1000 * 2)
     public void process() {
@@ -83,6 +86,13 @@ public class BatchFileProcessor {
                 log.info("cannot update status", e.getLocalizedMessage(), e);
             }
         });
+        batchFileRepository.findAllProcessedRulesRegistriesBatches().stream().filter(Objects::nonNull).forEach(batchFile -> {
+            try {
+                batchFileRepository.save(batchFileRepository.getOne(batchFile.getId()).withStatus(COMPLETE));
+            } catch (Exception e) {
+                log.info("cannot update status", e.getLocalizedMessage(), e);
+            }
+        });
     }
 
     private void processIncoming(String queueName, BatchFile batchFile) {
@@ -97,6 +107,8 @@ public class BatchFileProcessor {
                         eventService.sendDiscovery(queueName, discoveryRepository.save(getDiscovery(batchFile, map)).getId() + "|" + BatchFile.TYPE.LOOKUP.name());
                     } else if (batchFile.getType() == BatchFile.TYPE.REGISTRATION) {
                         eventService.sendDiscovery(queueName, registrationRepository.save(getRegistration(batchFile, map)).getId() + "|" + BatchFile.TYPE.REGISTRATION.name());
+                    } 	else if (batchFile.getType() == BatchFile.TYPE.RULES) {
+                        eventService.sendDiscovery(queueName, rulesRegistrationRepository.save(getRulesRegistration(batchFile, map)).getId() + "|" + BatchFile.TYPE.RULES.name());
                     }
                 });
             } catch (IOException e) {
@@ -142,4 +154,37 @@ public class BatchFileProcessor {
         registration.setEntityType(batchFile.getEntityType());
         return registration;
     }
+
+    private Rules getRulesRegistration(BatchFile batchFile, LinkedHashMap<String, String> map) {
+        final Rules rules = new Rules();
+        rules.setBatchId(batchFile.getId());
+        rules.setSupplierId(map.get(DiscoveryConst.SUPPLIER_ID));
+        rules.setEnforcementType(map.get(DiscoveryConst.ENFORCEMENT_TYPE));
+        rules.setMaxAmtLimit(Integer.valueOf(map.get(DiscoveryConst.MAX_AMT_LIMIT)));
+        rules.setRelationship(map.get(DiscoveryConst.RELATIONSHIP));
+        rules.setStatus(STATUS.READY);
+        rules.setReason(map.get(DiscoveryConst.REASON));
+        rules.setBuyerTaxId1(map.get(DiscoveryConst.BUYER_TAX_ID_1));
+        rules.setBuyerTaxId2(map.get(DiscoveryConst.BUYER_TAX_ID_2));
+        rules.setBuyerTaxId3(map.get(DiscoveryConst.BUYER_TAX_ID_3));
+        rules.setBuyerTaxId4(map.get(DiscoveryConst.BUYER_TAX_ID_4));
+        rules.setBuyerTaxId5(map.get(DiscoveryConst.BUYER_TAX_ID_5));
+        rules.setBuyerTaxId6(map.get(DiscoveryConst.BUYER_TAX_ID_6));
+        rules.setBuyerTaxId7(map.get(DiscoveryConst.BUYER_TAX_ID_7));
+        rules.setBuyerTaxId8(map.get(DiscoveryConst.BUYER_TAX_ID_8));
+        rules.setBuyerTaxId9(map.get(DiscoveryConst.BUYER_TAX_ID_9));
+        rules.setBuyerTaxId10(map.get(DiscoveryConst.BUYER_TAX_ID_10));
+        rules.setBuyerTaxId11(map.get(DiscoveryConst.BUYER_TAX_ID_11));
+        rules.setBuyerTaxId12(map.get(DiscoveryConst.BUYER_TAX_ID_12));
+        rules.setBuyerTaxId13(map.get(DiscoveryConst.BUYER_TAX_ID_13));
+        rules.setBuyerTaxId14(map.get(DiscoveryConst.BUYER_TAX_ID_14));
+        rules.setBuyerTaxId15(map.get(DiscoveryConst.BUYER_TAX_ID_15));
+        rules.setBuyerTaxId16(map.get(DiscoveryConst.BUYER_TAX_ID_16));
+        rules.setBuyerTaxId17(map.get(DiscoveryConst.BUYER_TAX_ID_17));
+        rules.setBuyerTaxId18(map.get(DiscoveryConst.BUYER_TAX_ID_18));
+        rules.setBuyerTaxId19(map.get(DiscoveryConst.BUYER_TAX_ID_19));
+        rules.setBuyerTaxId20(map.get(DiscoveryConst.BUYER_TAX_ID_20));
+        return rules;
+    }
+
 }

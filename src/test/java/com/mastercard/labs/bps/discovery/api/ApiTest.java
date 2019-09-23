@@ -125,5 +125,17 @@ public class ApiTest {
         //Assert.assertThat(registrationRepository.findAll().stream().filter(d -> d.getStatus() != Discovery.STATUS.COMPLETE).collect(Collectors.toList()).size(), Is.is(0));
     }
 
+    @Test
+    public void runRulesRegistrationTest() throws Exception {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("rules.file/Versapay_Rules_09202019.csv");
+        MockMultipartFile file = new MockMultipartFile("file", "Versapay_Rules_09202019.csv", MediaType.APPLICATION_OCTET_STREAM_VALUE, is);
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.multipart("/registration/suppliers/rules")
+                .file(file)
+                .header("agentName", "Versapay")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM_VALUE.toString())
+                .accept(MediaType.ALL))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful()).andReturn();
+        batchFileProcessor.process();
+    }
 
 }

@@ -4,15 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
-import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
-import com.mastercard.labs.bps.discovery.domain.journal.Record;
-import com.mastercard.labs.bps.discovery.domain.journal.Registration;
+import com.mastercard.labs.bps.discovery.domain.journal.*;
 import com.mastercard.labs.bps.discovery.service.DiscoveryServiceImpl;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelBuyer;
-import com.mastercard.labs.bps.discovery.webhook.model.DiscoveryModelSupplier;
-import com.mastercard.labs.bps.discovery.webhook.model.RegistrationModelBuyer;
-import com.mastercard.labs.bps.discovery.webhook.model.RegistrationModelSupplier;
+import com.mastercard.labs.bps.discovery.webhook.model.*;
+
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,7 +49,8 @@ public class DiscoveryController {
     private BoundMapperFacade<Registration, RegistrationModelSupplier> registrationToCSVFull;
     @Autowired
     private BoundMapperFacade<Registration, RegistrationModelBuyer> registrationToCSVPartial;
-
+    @Autowired
+    private BoundMapperFacade<Rules, RuleRegistrationModel> rulesRegistrationToCSV;
 
     @PostMapping(value = "/discovery/suppliers", produces = {"application/json"})
     public ResponseEntity<Link> handleSupplierLookup(@RequestParam("file") MultipartFile file) throws IOException {
@@ -69,6 +65,11 @@ public class DiscoveryController {
     @PostMapping(value = "/registration/suppliers", produces = {"application/json"})
     public ResponseEntity<Link> handleSupplierLookupWithAgent(@RequestParam("file") MultipartFile file, @RequestHeader(value = "agentName") String agentName) throws IOException {
         return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.REGISTRATION, BatchFile.ENTITY.SUPPLIER, agentName), "suppliers", "registration");
+    }
+
+    @PostMapping(value = "/registration/suppliers/rules", produces = {"application/json"})
+    public ResponseEntity<Link> handleSupplierRules(@RequestParam("file") MultipartFile file, @RequestHeader(value = "agentName") String agentName) throws IOException {
+        return getLinkResponseEntity(discoveryService.store(file, BatchFile.TYPE.RULES, BatchFile.ENTITY.SUPPLIER, agentName), "suppliers", "rules");
     }
 
     @PostMapping(value = "/registration/buyers", produces = {"application/json"})
@@ -99,6 +100,11 @@ public class DiscoveryController {
     @GetMapping(value = "/discovery/agents", produces = {"application/json"})
     public ResponseEntity<List<String>> lookupBatchInfo() {
         return ResponseEntity.ok(discoveryService.getAgents());
+    }
+
+    @GetMapping(value = "/rules/suppliers/{id}", produces = {"application/json"})
+    public ResponseEntity<?> providerSupplierRulesLookup(@PathVariable("id") String id) {
+        return handleRulesFile(id, rulesRegistrationToCSV, RuleRegistrationModel.class);
     }
 
     private URI getUri(String path, BatchFile batchFile, String context) {
@@ -174,6 +180,32 @@ public class DiscoveryController {
         return ResponseEntity.ok(discoveryService.getBatches(timeZone));
     }
 
+
+    private <T> ResponseEntity handleRulesFile(String id, BoundMapperFacade<? extends Rules, T> boundMapperFacade, Class<T> model) {
+        try {
+            BatchFile batchFile = discoveryService.isBatchFileReady(id);
+            return getResponseEntity(batchFile, getRules((BoundMapperFacade<Rules, T>) boundMapperFacade, model, batchFile));
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity(new Link(null, "discovery id " + id + " is invalid"), HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    private <T> byte[] getRules(BoundMapperFacade<Rules, T> boundMapperFacade, Class<T> model, BatchFile batchFile) throws JsonProcessingException {
+        if (batchFile.getStatus() == BatchFile.STATUS.COMPLETE) {
+            CsvMapper mapper = new CsvMapper();
+            mapper.disable(SORT_PROPERTIES_ALPHABETICALLY);
+            CsvSchema schema = mapper.schemaFor(model).withHeader();
+            byte[] isr = mapper.writer(schema)
+                    .writeValueAsString(discoveryService.getRules(batchFile.getId()).stream().map(boundMapperFacade::map)
+                            .collect(Collectors.toList())).getBytes();
+            return isr;
+        } else {
+            return null;
+        }
+    }
 
     @Getter
     @Setter

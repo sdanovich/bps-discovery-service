@@ -1,13 +1,11 @@
 package com.mastercard.labs.bps.discovery.service;
 
-import com.mastercard.labs.bps.discovery.domain.journal.BatchFile;
-import com.mastercard.labs.bps.discovery.domain.journal.Discovery;
-import com.mastercard.labs.bps.discovery.domain.journal.Record;
-import com.mastercard.labs.bps.discovery.domain.journal.Registration;
+import com.mastercard.labs.bps.discovery.domain.journal.*;
 import com.mastercard.labs.bps.discovery.exceptions.*;
 import com.mastercard.labs.bps.discovery.persistence.repository.BatchFileRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.DiscoveryRepository;
 import com.mastercard.labs.bps.discovery.persistence.repository.RegistrationRepository;
+import com.mastercard.labs.bps.discovery.persistence.repository.RulesRegistrationRepository;
 import com.mastercard.labs.bps.discovery.util.DiscoveryConst;
 import com.mastercard.labs.bps.discovery.webhook.model.*;
 import com.mastercard.labs.bps.discovery.webhook.model.ui.DiscoveryTable;
@@ -24,14 +22,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
 
 import javax.net.ssl.SSLException;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -65,8 +61,17 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     @Value("${directory.buyerByTrackId}")
     private String pathToBuyer;
 
-    private static final String INCONCLUSIVE_STR = "Inconclusive";
+    @Value("${rules.rejectMsg}")
+    private String rejectMsg;
 
+    @Value("${rules.warningMsg}")
+    private String warningMsg;
+
+    @Autowired
+    private RulesRegistrationRepository rulesRepository;
+
+    private static final String INCONCLUSIVE_STR = "Inconclusive";
+    private static final String AMOUNT_RULE_NAME = "Invoice Amount control";
 
     @Override
     public BatchFile store(@NotNull MultipartFile file, BatchFile.TYPE type, BatchFile.ENTITY entityType) throws IOException {
@@ -345,4 +350,241 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         }
         return registration;
     }
+
+    public enum RULESVALIDATION {
+
+        SUPPLIER_ID(DiscoveryConst.SUPPLIER_ID, "^(\\s)$");
+
+        private String value;
+        private String regex;
+
+        RULESVALIDATION(String value, String regex) {
+            this.value = value;
+            this.regex = regex;
+        }
+
+        public static boolean validate(Rules record, BatchFile.ENTITY entity) {
+            boolean valid = true;
+            if (record != null) {
+                Pattern.compile(SUPPLIER_ID.regex).matcher(Optional.ofNullable(record.getSupplierId()).orElse("")).matches();
+                if (valid ) {
+                    valid &= StringUtils.isNotBlank(record.getEnforcementType());
+                }
+            }
+            return valid;
+        }
+    }
+
+
+
+    public boolean isRulesValid(Rules record, BatchFile.ENTITY entity) {
+        return RULESVALIDATION.validate(record, entity);
+    }
+
+
+    public List<Rules> getRules(String batchId) {
+        return rulesRepository.findByBatchId(batchId);
+    }
+
+
+
+    public Rules persistRules(String id) {
+        logger.debug("Rule Primary Key ID: "+id);
+        logger.debug("Rule Processed Primary Key ID: "+id);
+
+        Rules rules = rulesRepository.findById(id).orElseThrow(() -> new ExecutionException("Rules " + id + " not found"));
+        BatchFile batchFile = batchFileRepository.findById(rules.getBatchId()).orElseThrow(() -> new ExecutionException("Batch File " + id + " not found"));
+        return persistRules(batchFile, rules);
+    }
+
+
+
+
+    public Rules persistRules(BatchFile batchFile, Rules record) {
+        ResponseEntity<RuleResponse> ruleResponseResponseEntity = null;
+        try {
+            if (batchFile.getType() == BatchFile.TYPE.RULES && !isRulesValid(record, batchFile.getEntityType())) {
+                record.setReason("Rules Registration Error - Missing required fields");
+                record.setStatus(Discovery.STATUS.FAILED);
+                throw new ValidationException(record.getReason());
+            }
+            RuleRequestModel ruleRequestModel = new RuleRequestModel();
+            ruleRequestModel.setAmount(record.getMaxAmtLimit());
+            ruleRequestModel.setAmountOperator(RuleRequestModel.AmountOperatorEnum.OVER);
+            ruleRequestModel.setBuyerTaxIds(getBuyerTaxIdList(record));
+            ruleRequestModel.setName(AMOUNT_RULE_NAME);
+            ruleRequestModel.setSupplierProfileId(record.getSupplierId());
+            ruleRequestModel.setDecisions(getDecisionPathList(record));
+            ruleResponseResponseEntity = restTemplateService.callRulesEngine(ruleRequestModel).get();
+            if (ruleResponseResponseEntity.getStatusCode().is2xxSuccessful()) {
+                record.setStatus(Discovery.STATUS.COMPLETE);
+                if (!StringUtils.isEmpty(getRulesResponseDetails(ruleResponseResponseEntity).getDescription())) {
+                    RuleResponse responseDetails = getRulesResponseDetails(ruleResponseResponseEntity);
+                    record.setReason(responseDetails.getDescription());
+                }
+            } else {
+                record.setReason("Create Rule Request Failed");
+                record.setStatus(Discovery.STATUS.FAILED);
+                log.info("ERROR: " + ruleResponseResponseEntity.getStatusCodeValue());
+            }
+
+        } catch (Exception e) {
+            record.setStatus(Discovery.STATUS.FAILED);
+            if (StringUtils.isBlank(record.getReason())) record.setReason(INCONCLUSIVE_STR);
+            log.error(e.getMessage(), e.getLocalizedMessage(), e);
+        }
+        return  rulesRepository.save(record);
+    }
+
+    private RuleResponse getRulesResponseDetails(ResponseEntity<RuleResponse> ruleResponseEntity) {
+        return Optional.ofNullable(ruleResponseEntity.getBody()).orElse(new RuleResponse());
+    }
+
+
+
+
+
+    private List<BuyerTaxId> getBuyerTaxIdList(Rules record) {
+        List<BuyerTaxId> taxIdList = new ArrayList<>();
+        BuyerTaxId.OperationEnum operationEnum = getBuyerTaxIdOperation(record);
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId1())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId1());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId2())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId2());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId3())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId3());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId4())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId4());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId5())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId5());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId6())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId6());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId7())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId7());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId8())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId8());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId9())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId9());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId10())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId10());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId11())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId11());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId12())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId12());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId13())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId13());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId14())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId14());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId15())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId15());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId16())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId16());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId17())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId17());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId18())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId18());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId19())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId19());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        if(!org.apache.commons.lang.StringUtils.isBlank(record.getBuyerTaxId20())) {
+            BuyerTaxId buyerTaxId = new BuyerTaxId();
+            buyerTaxId.setBuyerTaxId(record.getBuyerTaxId20());
+            buyerTaxId.setOperation(operationEnum);
+            taxIdList.add(buyerTaxId);
+        }
+        return taxIdList;
+    }
+
+    private BuyerTaxId.OperationEnum getBuyerTaxIdOperation(Rules record)
+    {
+        return record.getRelationship().equalsIgnoreCase("I")?BuyerTaxId.OperationEnum.INCLUDED:BuyerTaxId.OperationEnum.EXCLUDED;
+    }
+
+    private List<DecisionPath> getDecisionPathList(Rules record) {
+        List<DecisionPath> decisionPathList = new ArrayList<>();
+        DecisionPath decisionPath = new DecisionPath();
+        decisionPath.setDecisionCode(record.getEnforcementType().equalsIgnoreCase("W")?DecisionPath.DecisionCodeEnum.WARNING:DecisionPath.DecisionCodeEnum.REJECT);
+        decisionPath.setDecisionDescription(record.getEnforcementType().equalsIgnoreCase("W")?warningMsg:rejectMsg);
+        decisionPathList.add(decisionPath);
+        return decisionPathList;
+    }
+
 }

@@ -95,6 +95,11 @@ modal-mask {
     height:100px;
     width:700px;
 }
+#border3  {
+    display: inline-block;
+    height:50px;
+    width:200px;
+}
 
 
 .agent-control {
